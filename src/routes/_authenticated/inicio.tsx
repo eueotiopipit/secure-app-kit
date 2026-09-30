@@ -54,13 +54,13 @@ function InicioPage() {
 
   const name =
     profile?.display_name ||
-    (user.user_metadata?.display_name as string | undefined) ||
-    (user.user_metadata?.full_name as string | undefined) ||
+    (user.user_metadata["display_name"] as string | undefined) ||
+    (user.user_metadata["full_name"] as string | undefined) ||
     user.email?.split("@")[0] ||
     "usuário";
   const avatarUrl =
     profile?.avatar_url ||
-    (user.user_metadata?.avatar_url as string | undefined) ||
+    (user.user_metadata["avatar_url"] as string | undefined) ||
     undefined;
   const initials = name.slice(0, 2).toUpperCase();
 
