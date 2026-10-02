@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep authenticated financial features as separate routes under the managed `_authenticated` gate, sharing one AppShell; this preserves route-level code splitting and one security boundary.
+- Store money as integer cents in the database and derive balances from child movements; this prevents floating-point drift and conflicting totals.
