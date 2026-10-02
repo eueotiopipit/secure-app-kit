@@ -1,7 +1,7 @@
 # Plano Anti-Dívidas — Roadmap
 
-- [ ] Evoluir o banco financeiro com RLS e cálculos seguros
-- [ ] Criar a estrutura visual interna mobile-first e desktop
+- [x] Evoluir o banco financeiro com RLS e cálculos seguros
+- [ ] Criar a estrutura visual interna e conectar a navegação
 - [ ] Implementar dashboard com dados reais e insights
 - [ ] Implementar gastos e receitas com busca, filtros e CRUD
 - [ ] Implementar dívidas, pagamentos e quitação
