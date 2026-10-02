@@ -1,14 +1,18 @@
-# Welcome to your Lovable project
+# Secure App Login
+
+To com um app aqui e quero colocar um banco de dados nele e email com login e senha estilo app mesmo que funcione você consegue fazer isso?
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://secure-app-kit.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/0e2be8cd-077a-4a10-b636-72471d10f74a).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +24,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
