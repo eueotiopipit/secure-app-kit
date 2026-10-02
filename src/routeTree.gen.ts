@@ -13,7 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedDividasRouteImport } from './routes/_authenticated/dividas'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
+import { Route as AuthenticatedLancamentosRouteImport } from './routes/_authenticated/lancamentos'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
+import { Route as AuthenticatedPlanejamentoRouteImport } from './routes/_authenticated/planejamento'
+import { Route as AuthenticatedPorquinhosRouteImport } from './routes/_authenticated/porquinhos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,9 +39,36 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDividasRoute = AuthenticatedDividasRouteImport.update({
+  id: '/dividas',
+  path: '/dividas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedInicioRoute = AuthenticatedInicioRouteImport.update({
   id: '/inicio',
   path: '/inicio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLancamentosRoute =
+  AuthenticatedLancamentosRouteImport.update({
+    id: '/lancamentos',
+    path: '/lancamentos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanejamentoRoute =
+  AuthenticatedPlanejamentoRouteImport.update({
+    id: '/planejamento',
+    path: '/planejamento',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPorquinhosRoute = AuthenticatedPorquinhosRouteImport.update({
+  id: '/porquinhos',
+  path: '/porquinhos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -44,13 +76,23 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/dividas': typeof AuthenticatedDividasRoute
   '/inicio': typeof AuthenticatedInicioRoute
+  '/lancamentos': typeof AuthenticatedLancamentosRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
+  '/planejamento': typeof AuthenticatedPlanejamentoRoute
+  '/porquinhos': typeof AuthenticatedPorquinhosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/dividas': typeof AuthenticatedDividasRoute
   '/inicio': typeof AuthenticatedInicioRoute
+  '/lancamentos': typeof AuthenticatedLancamentosRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
+  '/planejamento': typeof AuthenticatedPlanejamentoRoute
+  '/porquinhos': typeof AuthenticatedPorquinhosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,20 +100,48 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/dividas': typeof AuthenticatedDividasRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
+  '/_authenticated/lancamentos': typeof AuthenticatedLancamentosRoute
+  '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
+  '/_authenticated/planejamento': typeof AuthenticatedPlanejamentoRoute
+  '/_authenticated/porquinhos': typeof AuthenticatedPorquinhosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/reset-password' | '/inicio'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/dividas'
+    | '/inicio'
+    | '/lancamentos'
+    | '/perfil'
+    | '/planejamento'
+    | '/porquinhos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password' | '/inicio'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/dividas'
+    | '/inicio'
+    | '/lancamentos'
+    | '/perfil'
+    | '/planejamento'
+    | '/porquinhos'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/dividas'
     | '/_authenticated/inicio'
+    | '/_authenticated/lancamentos'
+    | '/_authenticated/perfil'
+    | '/_authenticated/planejamento'
+    | '/_authenticated/porquinhos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -111,6 +181,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dividas': {
+      id: '/_authenticated/dividas'
+      path: '/dividas'
+      fullPath: '/dividas'
+      preLoaderRoute: typeof AuthenticatedDividasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/inicio': {
       id: '/_authenticated/inicio'
       path: '/inicio'
@@ -118,15 +195,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInicioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/lancamentos': {
+      id: '/_authenticated/lancamentos'
+      path: '/lancamentos'
+      fullPath: '/lancamentos'
+      preLoaderRoute: typeof AuthenticatedLancamentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planejamento': {
+      id: '/_authenticated/planejamento'
+      path: '/planejamento'
+      fullPath: '/planejamento'
+      preLoaderRoute: typeof AuthenticatedPlanejamentoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/porquinhos': {
+      id: '/_authenticated/porquinhos'
+      path: '/porquinhos'
+      fullPath: '/porquinhos'
+      preLoaderRoute: typeof AuthenticatedPorquinhosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDividasRoute: typeof AuthenticatedDividasRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
+  AuthenticatedLancamentosRoute: typeof AuthenticatedLancamentosRoute
+  AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
+  AuthenticatedPlanejamentoRoute: typeof AuthenticatedPlanejamentoRoute
+  AuthenticatedPorquinhosRoute: typeof AuthenticatedPorquinhosRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDividasRoute: AuthenticatedDividasRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
+  AuthenticatedLancamentosRoute: AuthenticatedLancamentosRoute,
+  AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
+  AuthenticatedPlanejamentoRoute: AuthenticatedPlanejamentoRoute,
+  AuthenticatedPorquinhosRoute: AuthenticatedPorquinhosRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
