@@ -19,12 +19,12 @@ import {
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — Meu App" },
+      { title: "Entrar — Finza" },
       {
         name: "description",
         content: "Entre ou crie sua conta com email e senha ou com o Google.",
       },
-      { property: "og:title", content: "Entrar — Meu App" },
+      { property: "og:title", content: "Entrar — Finza" },
       {
         property: "og:description",
         content: "Entre ou crie sua conta com email e senha ou com o Google.",
@@ -300,7 +300,7 @@ function AuthShell({ children }: { children: React.ReactNode }) {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <span className="text-gradient-gold text-3xl font-bold tracking-tight">
-            Meu App
+            Finza
           </span>
         </div>
         {children}
