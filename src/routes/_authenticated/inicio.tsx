@@ -46,7 +46,7 @@ function InicioPage() {
       if (debts.error) throw debts.error;
       if (pigs.error) throw pigs.error;
       return {
-        name: profile.data?["display_name"] ?? user.user_metadata?.display_name ?? "Usuário",
+        name: profile.data?.display_name ?? user.user_metadata?.["display_name"] ?? "Usuário",
         tx: tx.data ?? [],
         debts: debts.data ?? [],
         pigs: pigs.data ?? [],
