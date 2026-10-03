@@ -10,7 +10,7 @@ import {
   PiggyBank,
   Plus,
   Receipt,
-  ReceiptText,
+  ReceiptText,\n  BarChart3,
   Sparkles,
   TrendingDown,
   TrendingUp,
@@ -373,7 +373,7 @@ function QuickAction({ href, icon, label, tone }: { href: string; icon: React.Re
   );
 }
 
-function SectionHeading({ icon, title, href, action }: { icon: React.ReactNode; title: string; href: string; action: string }) {
+function SmartHub({ href, icon, title, text, action }: { href: string; icon: React.ReactNode; title: string; text: string; action: string }) {\n  return <a href={href} className="group rounded-2xl border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex items-start justify-between gap-3"><span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">{icon}</span><ChevronRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5" /></div><p className="mt-4 font-semibold">{title}</p><p className="mt-1 text-sm text-muted-foreground">{text}</p><p className="mt-4 text-xs font-semibold text-primary">{action} →</p></a>;\n}\n\nfunction SectionHeading({ icon, title, href, action }: { icon: React.ReactNode; title: string; href: string; action: string }) {
   return <div className="flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 font-semibold">{icon}{title}</h2><Button asChild variant="ghost" size="sm" className="gap-1 text-xs"><a href={href}>{action}<ChevronRight className="size-3.5" /></a></Button></div>;
 }
 
