@@ -2,24 +2,39 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-internal-key",
 };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return json({ error: "Não autenticado." }, 401);
+    const internalKey = req.headers.get("X-Internal-Key");
+    const webhookSecret = Deno.env.get("PLUGGY_WEBHOOK_SECRET");
+    const isInternal = !!webhookSecret && !!internalKey && internalKey === webhookSecret;
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!,
-      { global: { headers: authHeader ? { Authorization: authHeader } : {} } },
-    );
+    let supabase;
+    let authenticatedUserId: string | null = null;
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return json({ error: "Sessão inválida." }, 401);
+    if (isInternal) {
+      supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+    } else {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) return json({ error: "Não autenticado." }, 401);
+
+      supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!,
+        { global: { headers: { Authorization: authHeader } } },
+      );
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) return json({ error: "Sessão inválida." }, 401);
+      authenticatedUserId = user.id;
+    }
 
     const clientId = Deno.env.get("PLUGGY_CLIENT_ID");
     const clientSecret = Deno.env.get("PLUGGY_CLIENT_SECRET");
@@ -42,8 +57,11 @@ Deno.serve(async (req) => {
     const item = await itemResponse.json();
     if (!itemResponse.ok) return json({ error: "Não foi possível consultar a conexão bancária." }, 502);
 
-    const targetUserId = user.id;
-    if (!targetUserId || item.clientUserId !== targetUserId) return json({ error: "Conexão bancária não pertence a este usuário." }, 403);
+    const targetUserId = String(item.clientUserId ?? "");
+    if (!targetUserId) return json({ error: "A conexão bancária não possui usuário associado." }, 422);
+    if (authenticatedUserId && targetUserId !== authenticatedUserId) {
+      return json({ error: "Conexão bancária não pertence a este usuário." }, 403);
+    }
 
     const connector = item.connector ?? {};
     const { error: connectionError } = await supabase.from("bank_connections").upsert({
