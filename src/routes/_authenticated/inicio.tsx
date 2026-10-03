@@ -288,6 +288,22 @@ function InicioPage() {
           </div>
         </section>
 
+        <section className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 via-card to-card p-4 shadow-sm sm:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary"><Target className="size-3.5" /> Plano de ação</p>
+              <h2 className="mt-1 text-xl font-bold tracking-tight">Seu plano desta semana</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Próximos passos baseados nos números que você já registrou.</p>
+            </div>
+            <Sparkles className="hidden size-5 text-primary sm:block" />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <ActionCard icon={<ArrowDownCircle className="size-5" />} title="Controle seus gastos" value={money(expenses)} description="Total de gastos registrados até agora." href="/lancamentos" action="Ver gastos" />
+            <ActionCard icon={<TrendingUp className="size-5" />} title="Aumente sua renda" value={money(Math.max(0, income - expenses))} description="Use o saldo atual como ponto de partida para sua próxima meta." href="/renda-extra" action="Explorar renda" />
+            <ActionCard icon={<PiggyBank className="size-5" />} title="Continue guardando" value={money(saved)} description={goalTarget > 0 ? `${Math.round(savingProgress)}% das suas metas acumuladas.` : "Crie uma meta para começar a acompanhar."} href="/porquinhos" action="Ver metas" />
+          </div>
+        </section>
+
         <section className="grid gap-3 md:grid-cols-2">
           <Card>
             <CardContent className="p-5">
