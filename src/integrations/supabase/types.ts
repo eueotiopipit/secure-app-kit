@@ -50,48 +50,6 @@ export type Database = {
         }
         Relationships: []
       }
-      bank_connections: {
-        Row: {
-          consent_expires_at: string | null
-          created_at: string
-          id: string
-          institution_logo_url: string | null
-          institution_name: string | null
-          item_id: string
-          last_synced_at: string | null
-          provider: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          consent_expires_at?: string | null
-          created_at?: string
-          id?: string
-          institution_logo_url?: string | null
-          institution_name?: string | null
-          item_id: string
-          last_synced_at?: string | null
-          provider?: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          consent_expires_at?: string | null
-          created_at?: string
-          id?: string
-          institution_logo_url?: string | null
-          institution_name?: string | null
-          item_id?: string
-          last_synced_at?: string | null
-          provider?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       budgets: {
         Row: {
           category: string
@@ -312,8 +270,6 @@ export type Database = {
       financial_transactions: {
         Row: {
           amount_cents: number
-          source: string
-          external_id: string | null
           category: string
           created_at: string
           description: string
@@ -328,8 +284,6 @@ export type Database = {
         }
         Insert: {
           amount_cents: number
-          source?: string
-          external_id?: string | null
           category: string
           created_at?: string
           description?: string
@@ -344,8 +298,6 @@ export type Database = {
         }
         Update: {
           amount_cents?: number
-          source?: string
-          external_id?: string | null
           category?: string
           created_at?: string
           description?: string
