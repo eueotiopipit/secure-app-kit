@@ -10,7 +10,10 @@ const items = [
   { to: "/contas", label: "Contas", icon: Building2 },
   { to: "/dividas", label: "Dívidas", icon: CreditCard },
   { to: "/porquinhos", label: "Porquinhos", icon: PiggyBank },
-  { to: "/planejamento", label: "Planejamento", icon: BarChart3 },\n  { to: "/renda-extra", label: "Renda extra", icon: Rocket },\n  { to: "/investimentos", label: "Investimentos", icon: TrendingUp },\n  { to: "/assistente", label: "IA", icon: Bot },
+  { to: "/planejamento", label: "Planejamento", icon: BarChart3 },
+  { to: "/renda-extra", label: "Renda extra", icon: Rocket },
+  { to: "/investimentos", label: "Investimentos", icon: TrendingUp },
+  { to: "/assistente", label: "IA", icon: Bot },
   { to: "/perfil", label: "Perfil", icon: UserCircle },
 ] as const;
 
@@ -30,7 +33,7 @@ export function FinanceLayout({ children }: { children: React.ReactNode }) {
   return <div className="min-h-screen bg-background">
     <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link to="/inicio" className="text-lg font-bold tracking-tight">Plano <span className="text-primary">Anti-Dívidas</span></Link>
+        <Link to="/inicio" className="text-lg font-bold tracking-tight">Finza</Link>
         <nav className="hidden gap-1 md:flex">{items.map(({ to, label, icon: Icon }) => <Button key={to} asChild variant={location.pathname === to ? "secondary" : "ghost"} size="sm"><Link to={to}><Icon className="size-4" />{label}</Link></Button>)}</nav>
         <div className="flex items-center gap-1">
           <Button asChild variant={location.pathname === "/perfil" ? "secondary" : "ghost"} size="sm"><Link to="/perfil"><UserCircle className="size-5" /><span className="hidden lg:inline">Perfil</span></Link></Button>
