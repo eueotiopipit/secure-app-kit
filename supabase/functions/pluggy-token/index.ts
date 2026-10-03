@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
         options: {
           clientUserId: user.id,
           avoidDuplicates: true,
+          oauthRedirectUri: "https://secure-app-kit.lovable.app/contas",
           ...(webhookUrl ? { webhookUrl } : {}),
         },
       }),
