@@ -1,7 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Building2, CheckCircle2, Landmark, RefreshCw, Unplug, WalletCards, ShieldCheck, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Banknote,
+  Building2,
+  Check,
+  CreditCard,
+  Landmark,
+  PiggyBank,
+  Plus,
+  Trash2,
+  WalletCards,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,226 +21,263 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FinanceLayout, money } from "@/components/finance-layout";
 
 export const Route = createFileRoute("/_authenticated/contas")({
-  head: () => ({ meta: [{ title: "Contas bancárias — Plano Anti-Dívidas" }] }),
+  head: () => ({ meta: [{ title: "Contas — Finza" }] }),
   component: ContasPage,
 });
 
-declare global {
-  interface Window {
-    PluggyConnect?: new (options: {
-      connectToken: string;
-      countries?: string[];
-      products?: string[];
-      allowFullscreen?: boolean;
-      language?: string;
-      theme?: "light" | "dark";
-      forceOauthInBrowser?: boolean;
-      onSuccess?: (data: { item: { id: string } }) => void | Promise<void>;
-      onError?: (error: { message?: string; data?: { item?: { id: string } } }) => void | Promise<void>;
-      onClose?: () => void | Promise<void>;
-    }) => { init: () => void; destroy?: () => void; };
-  }
-}
-
-type Connection = {
+type Account = {
   id: string;
-  item_id: string;
-  institution_name: string | null;
-  institution_logo_url: string | null;
-  status: string;
-  last_synced_at: string | null;
+  name: string;
+  account_type: string;
+  opening_balance_cents: number;
+  color: string;
 };
+
+const accountTypes = [
+  { value: "checking", label: "Conta corrente", icon: Landmark },
+  { value: "savings", label: "Poupança", icon: PiggyBank },
+  { value: "wallet", label: "Carteira", icon: WalletCards },
+  { value: "credit_card", label: "Cartão", icon: CreditCard },
+] as const;
 
 function ContasPage() {
   const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
-  const [connectToken, setConnectToken] = useState<string | null>(null);
-  const [connecting, setConnecting] = useState(false);
-  const [syncing, setSyncing] = useState<string | null>(null);
-  const [widgetReady, setWidgetReady] = useState(false);
-  const [accountName, setAccountName] = useState("");
-  const [accountType, setAccountType] = useState("checking");
-  const [openingBalance, setOpeningBalance] = useState("");
-  const [savingAccount, setSavingAccount] = useState(false);
+  const [name, setName] = useState("");
+  const [type, setType] = useState("checking");
+  const [balance, setBalance] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.PluggyConnect) {
-      setWidgetReady(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://cdn.pluggy.ai/pluggy-connect/latest/pluggy-connect.js";
-    script.async = true;
-    script.onload = () => setWidgetReady(Boolean(window.PluggyConnect));
-    script.onerror = () => toast.error("Não foi possível carregar a conexão bancária.");
-    document.head.appendChild(script);
-    return () => {
-      script.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!connectToken || !widgetReady || !window.PluggyConnect) return;
-
-    let widget: { init: () => void; destroy?: () => void } | undefined;
-
-    try {
-      widget = new window.PluggyConnect({
-        connectToken,
-        countries: ["BR"],
-        products: ["ACCOUNTS", "TRANSACTIONS"],
-        allowFullscreen: true,
-        language: "pt",
-        theme: "dark",
-        forceOauthInBrowser: true,
-        onSuccess: onConnected,
-        onError: ({ message }) => {
-          setConnectToken(null);
-          toast.error(message || "Não foi possível concluir a conexão bancária.");
-        },
-        onClose: () => {
-          setConnectToken(null);
-        },
-      });
-
-      widget.init();
-    } catch (error) {
-      console.error(error);
-      setConnectToken(null);
-      toast.error("Não foi possível abrir a conexão bancária.");
-    }
-
-    return () => {
-      widget?.destroy?.();
-    };
-  }, [connectToken, widgetReady]);
-
-  const { data: connections = [], isLoading } = useQuery<Connection[]>({
-    queryKey: ["bank-connections", user.id],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any).from("bank_connections").select("id,item_id,institution_name,institution_logo_url,status,last_synced_at").eq("user_id", user.id).order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Connection[];
-    },
-  });
-
-  const { data: manualAccounts = [], isLoading: manualAccountsLoading } = useQuery<any[]>({
+  const { data: accounts = [], isLoading } = useQuery<Account[]>({
     queryKey: ["finance-accounts", user.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("finance_accounts").select("id,name,account_type,opening_balance_cents,color").eq("user_id", user.id).order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("finance_accounts")
+        .select("id,name,account_type,opening_balance_cents,color")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as Account[];
     },
   });
 
-  async function addManualAccount() {
-    const balance = Math.round(Number(openingBalance.replace(",", ".")) * 100);
-    if (!accountName.trim()) return void toast.error("Digite o nome da conta.");
-    if (!Number.isFinite(balance)) return void toast.error("Informe um saldo válido.");
-    setSavingAccount(true);
-    const { error } = await supabase.from("finance_accounts").insert({ user_id: user.id, name: accountName.trim(), account_type: accountType, opening_balance_cents: balance });
-    setSavingAccount(false);
+  const total = useMemo(
+    () => accounts.reduce((sum, account) => sum + Number(account.opening_balance_cents || 0), 0),
+    [accounts],
+  );
+
+  async function addAccount() {
+    const parsed = Number(balance.replace(",", "."));
+    if (!name.trim()) return void toast.error("Digite o nome da conta.");
+    if (!Number.isFinite(parsed)) return void toast.error("Informe um saldo válido.");
+
+    setSaving(true);
+    const { error } = await supabase.from("finance_accounts").insert({
+      user_id: user.id,
+      name: name.trim(),
+      account_type: type,
+      opening_balance_cents: Math.round(parsed * 100),
+    });
+    setSaving(false);
+
     if (error) return void toast.error(error.message);
-    setAccountName("");
-    setOpeningBalance("");
+
+    setName("");
+    setBalance("");
     await queryClient.invalidateQueries({ queryKey: ["finance-accounts", user.id] });
-    toast.success("Conta cadastrada.");
+    await queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
+    toast.success("Conta adicionada.");
   }
 
-  async function removeManualAccount(id: string) {
-    const { error } = await supabase.from("finance_accounts").delete().eq("id", id).eq("user_id", user.id);
+  async function removeAccount(id: string) {
+    const { error } = await supabase
+      .from("finance_accounts")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
     if (error) return void toast.error(error.message);
+
     await queryClient.invalidateQueries({ queryKey: ["finance-accounts", user.id] });
+    await queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
     toast.success("Conta removida.");
-  }
-
-  async function connectBank() {
-    setConnecting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("pluggy-token", { body: {} });
-      if (error || !data?.accessToken) throw new Error(data?.error || error?.message || "Não foi possível iniciar a conexão.");
-      if (!window.PluggyConnect || !widgetReady) throw new Error("A conexão bancária ainda está carregando. Tente novamente em alguns segundos.");
-      setConnectToken(data.accessToken);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível conectar o banco.");
-    } finally { setConnecting(false); }
-  }
-
-  async function syncItem(itemId: string) {
-    setSyncing(itemId);
-    try {
-      const { data, error } = await supabase.functions.invoke("pluggy-sync-item", { body: { itemId } });
-      if (error || !data?.ok) throw new Error(data?.error || error?.message || "Falha ao sincronizar.");
-      await queryClient.invalidateQueries({ queryKey: ["bank-connections", user.id] });
-      await queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
-      toast.success((data.imported ?? 0) + " movimentações sincronizadas.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível sincronizar.");
-    } finally { setSyncing(null); }
-  }
-
-  async function onConnected({ item }: { item: { id: string } }) {
-    setConnectToken(null);
-    toast.success("Banco conectado. Importando seu extrato...");
-    await syncItem(item.id);
   }
 
   return (
     <FinanceLayout>
-      <div className="mx-auto max-w-3xl space-y-6 pb-8">
-        <header className="space-y-2">
-          <p className="flex items-center gap-2 text-sm font-medium text-primary"><Landmark className="size-4" /> Open Finance</p>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Suas contas</h1>
-          <p className="text-sm text-muted-foreground">Conecte seu banco para trazer saldo e movimentações para o Plano Anti-Dívidas.</p>
+      <div className="space-y-6 pb-8">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
+              <WalletCards className="size-4" />
+              Organização financeira
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight">Suas contas</h1>
+            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+              Organize onde seu dinheiro está e acompanhe o saldo de cada lugar.
+            </p>
+          </div>
+          <div className="rounded-2xl border bg-card px-4 py-3 shadow-sm">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Saldo cadastrado</p>
+            <p className="mt-1 text-xl font-bold">{money(total)}</p>
+          </div>
         </header>
 
-        {connectToken ? (
-          <Card className="overflow-hidden">
-            <CardHeader><CardTitle className="text-base">Conectando seu banco</CardTitle></CardHeader>
-            <CardContent className="flex min-h-[220px] items-center justify-center text-center">
-              <div>
-                <RefreshCw className="mx-auto mb-3 size-7 animate-spin text-primary" />
-                <p className="text-sm font-medium">{widgetReady ? "Abrindo conexão segura..." : "Carregando conexão segura..."}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Você será direcionado para autorizar o compartilhamento.</p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <Card className="overflow-hidden border-primary/20 bg-primary/[0.04]">
-              <CardContent className="p-5 sm:p-6">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex gap-4">
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"><Building2 className="size-6" /></div>
-                    <div><h2 className="font-semibold">Conecte uma conta bancária</h2><p className="mt-1 max-w-xl text-sm text-muted-foreground">O acesso acontece pelo fluxo seguro do banco. Você escolhe o que autoriza compartilhar.</p></div>
-                  </div>
-                  <Button onClick={connectBank} disabled={connecting} className="shrink-0"><WalletCards className="size-4" />{connecting ? "Preparando..." : "Conectar banco"}</Button>
+        <Card className="overflow-hidden border-primary/15">
+          <CardHeader className="border-b bg-primary/[0.04]">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Plus className="size-4" />
+              </span>
+              Adicionar conta
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_auto] lg:items-end">
+            <Field label="Nome">
+              <input
+                className="h-10 w-full rounded-xl border bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Ex.: Nubank"
+              />
+            </Field>
+
+            <Field label="Tipo">
+              <select
+                className="h-10 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:border-primary"
+                value={type}
+                onChange={(event) => setType(event.target.value)}
+              >
+                {accountTypes.map((item) => (
+                  <option key={item.value} value={item.value}>{item.label}</option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Saldo atual">
+              <input
+                className="h-10 w-full rounded-xl border bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                value={balance}
+                onChange={(event) => setBalance(event.target.value)}
+                inputMode="decimal"
+                placeholder="0,00"
+              />
+            </Field>
+
+            <Button onClick={addAccount} disabled={saving} className="h-10">
+              <Plus className="size-4" />
+              {saving ? "Salvando..." : "Adicionar"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold">Minhas contas</h2>
+              <p className="text-xs text-muted-foreground">
+                Seus saldos ficam disponíveis para as análises do Finza.
+              </p>
+            </div>
+            <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold">
+              {accounts.length} {accounts.length === 1 ? "conta" : "contas"}
+            </span>
+          </div>
+
+          {isLoading ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[1, 2].map((item) => (
+                <Card key={item} className="animate-pulse">
+                  <CardContent className="h-28 p-5" />
+                </Card>
+              ))}
+            </div>
+          ) : accounts.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="py-12 text-center">
+                <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Building2 className="size-7" />
                 </div>
-                <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t pt-4 text-xs text-muted-foreground"><span className="flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-emerald-500" /> Credenciais não ficam no app</span><span className="flex items-center gap-1.5"><CheckCircle2 className="size-3.5 text-emerald-500" /> Você autoriza no banco</span></div>
+                <h3 className="mt-4 font-semibold">Nenhuma conta cadastrada</h3>
+                <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
+                  Cadastre sua conta principal para começar a acompanhar seu dinheiro pelo Finza.
+                </p>
               </CardContent>
             </Card>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {accounts.map((account) => {
+                const typeInfo = accountTypes.find((item) => item.value === account.account_type) ?? accountTypes[0];
+                const Icon = typeInfo.icon;
+                const positive = Number(account.opening_balance_cents) >= 0;
 
-            <section className="space-y-3">
-              <div><h2 className="font-semibold">Minhas contas</h2><p className="mt-1 text-xs text-muted-foreground">Cadastre carteira, conta corrente, poupança ou cartão para organizar seu dinheiro.</p></div>
-              <Card><CardContent className="grid gap-3 p-4 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-end">
-                <div><label className="text-xs font-medium">Nome</label><input className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm" value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="Ex.: Nubank" /></div>
-                <div><label className="text-xs font-medium">Tipo</label><select className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm" value={accountType} onChange={e => setAccountType(e.target.value)}><option value="checking">Conta corrente</option><option value="savings">Poupança</option><option value="wallet">Carteira</option><option value="credit_card">Cartão</option></select></div>
-                <div><label className="text-xs font-medium">Saldo inicial</label><input className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm" value={openingBalance} onChange={e => setOpeningBalance(e.target.value)} inputMode="decimal" placeholder="0,00" /></div>
-                <Button onClick={addManualAccount} disabled={savingAccount}><Plus className="size-4" />{savingAccount ? "Salvando..." : "Cadastrar"}</Button>
-              </CardContent></Card>
-              {manualAccountsLoading ? <p className="text-sm text-muted-foreground">Carregando contas...</p> : manualAccounts.length > 0 && <div className="grid gap-2 sm:grid-cols-2">{manualAccounts.map(account => <Card key={account.id}><CardContent className="flex items-center gap-3 p-4"><div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><WalletCards className="size-5" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{account.name}</p><p className="text-xs text-muted-foreground">{account.account_type === "checking" ? "Conta corrente" : account.account_type === "savings" ? "Poupança" : account.account_type === "wallet" ? "Carteira" : "Cartão"}</p><p className="mt-1 text-sm font-bold">{money(account.opening_balance_cents)}</p></div><Button variant="ghost" size="icon" onClick={() => removeManualAccount(account.id)} aria-label="Excluir conta"><Trash2 className="size-4" /></Button></CardContent></Card>)}</div>}
-            </section>
+                return (
+                  <Card key={account.id} className="group overflow-hidden transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                            <Icon className="size-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold">{account.name}</p>
+                            <p className="text-xs text-muted-foreground">{typeInfo.label}</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-60 transition-opacity hover:opacity-100"
+                          onClick={() => removeAccount(account.id)}
+                          aria-label={"Excluir " + account.name}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
 
-            <section className="space-y-3">
-              <div><h2 className="font-semibold">Contas conectadas</h2><p className="mt-1 text-xs text-muted-foreground">Os extratos importados aparecem automaticamente nos seus lançamentos.</p></div>
-              {isLoading ? <Card><CardContent className="p-5 text-sm text-muted-foreground">Carregando contas...</CardContent></Card> : connections.length === 0 ? <Card><CardContent className="flex items-center gap-4 p-5"><div className="flex size-10 items-center justify-center rounded-full bg-muted"><Unplug className="size-4 text-muted-foreground" /></div><div><p className="text-sm font-medium">Nenhuma conta conectada</p><p className="mt-1 text-xs text-muted-foreground">Conecte seu primeiro banco acima.</p></div></CardContent></Card> : <div className="space-y-2">{connections.map((connection) => <Card key={connection.id}><CardContent className="flex items-center gap-3 p-4">{connection.institution_logo_url ? <img src={connection.institution_logo_url} alt="" className="size-10 rounded-xl object-contain bg-white p-1" /> : <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Building2 className="size-5" /></div>}<div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{connection.institution_name || "Banco conectado"}</p><p className="mt-0.5 text-xs text-muted-foreground">{connection.last_synced_at ? "Sincronizado " + new Date(connection.last_synced_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "Aguardando sincronização"}</p></div><span className="hidden items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-500 sm:flex"><CheckCircle2 className="size-3" /> Conectado</span><Button variant="outline" size="sm" onClick={() => syncItem(connection.item_id)} disabled={syncing === connection.item_id}><RefreshCw className={"size-4 " + (syncing === connection.item_id ? "animate-spin" : "")} /><span className="hidden sm:inline">{syncing === connection.item_id ? "Sincronizando" : "Sincronizar"}</span></Button></CardContent></Card>)}</div>}
-            </section>
+                      <div className="mt-6 flex items-end justify-between">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Saldo</p>
+                          <p className="mt-1 text-2xl font-bold tracking-tight">{money(Number(account.opening_balance_cents))}</p>
+                        </div>
+                        <span className={positive ? "flex size-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600" : "flex size-8 items-center justify-center rounded-full bg-red-500/10 text-red-600"}>
+                          {positive ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+                        </span>
+                      </div>
 
-            <div className="rounded-xl border border-dashed p-4 text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">Como funciona:</strong> o app usa Open Finance para criar uma conexão autorizada, recebe os dados padronizados do banco e transforma as movimentações em lançamentos do seu painel.</div>
-          </>
-        )}
+                      <div className="mt-4 flex items-center gap-2 border-t pt-3 text-[11px] text-muted-foreground">
+                        <Check className="size-3.5 text-emerald-500" />
+                        Integrada ao seu painel financeiro
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <Card className="border-primary/15 bg-primary/[0.03]">
+          <CardContent className="flex gap-3 p-5">
+            <Banknote className="mt-0.5 size-5 shrink-0 text-primary" />
+            <div>
+              <p className="text-sm font-semibold">Tudo conectado dentro do Finza</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Suas contas servem de base para organizar movimentações, visualizar seu saldo e entender para onde seu dinheiro está indo.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </FinanceLayout>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="text-xs font-medium">
+      {label}
+      <div className="mt-1.5">{children}</div>
+    </label>
   );
 }
