@@ -67,7 +67,7 @@ function InicioPage() {
   const savingProgress = goalTarget > 0 ? Math.min(100, (saved / goalTarget) * 100) : 0;
   const recentTransactions = transactions.slice(0, 4);
   const topGoals = (data?.pigs ?? []).slice(0, 2);
-  const [chartPeriod, setChartPeriod] = useState<7 | 30>(7);
+  const [chartPeriod, setChartPeriod] = useState<7 | 30 | 180>(30);
 
   const movementChart = useMemo(() => {
     const now = new Date();
@@ -141,56 +141,67 @@ function InicioPage() {
                   <Wallet className="size-4" /> Saldo atual
                 </div>
                 <p className="text-3xl font-bold tracking-tight sm:text-4xl">{money(balance)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Receitas e gastos registrados no app</p>
               </div>
-              <div className="w-[145px] shrink-0 sm:w-[190px]">
-                <div className="mb-1 flex items-center justify-end gap-2">
-                  <span className="text-[10px] font-medium text-muted-foreground">${chartPeriod} dias</span>
-                  <div className="flex rounded-md border bg-background/70 p-0.5">
-                    {[7, 30].map((period) => (
-                      <button
-                        key={period}
-                        type="button"
-                        onClick={() => setChartPeriod(period as 7 | 30)}
-                        className={`rounded px-1.5 py-0.5 text-[9px] font-semibold transition-colors ${
-                          chartPeriod === period ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-                        }`}
-                      >
-                        {period}D
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="h-[72px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={movementChart} margin={{ top: 4, right: 2, left: -28, bottom: 0 }}>
-                      <XAxis dataKey="label" hide />
-                      <YAxis hide domain={["auto", "auto"]} />
-                      <Tooltip
-                        cursor={false}
-                        contentStyle={{
-                          borderRadius: 10,
-                          border: "1px solid hsl(var(--border))",
-                          background: "hsl(var(--card))",
-                          fontSize: 11,
-                          padding: "6px 8px",
-                        }}
-                        formatter={(value, name) => [
-                          money(Number(value)),
-                          name === "income" ? "Receitas" : "Gastos",
-                        ]}
-                      />
-                      <Line type="monotone" dataKey="income" stroke="hsl(142 71% 45%)" strokeWidth={2} dot={false} animationDuration={450} />
-                      <Line type="monotone" dataKey="expense" stroke="hsl(0 84% 60%)" strokeWidth={2} dot={false} animationDuration={450} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+              <div className="hidden size-11 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex">
+                <Wallet className="size-5" />
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-3">
-              <MiniValue icon={<ArrowUpCircle className="size-3.5 text-emerald-600" />} label="Receitas" value={money(income)} compact />
+            <div className="mt-5 grid grid-cols-3 gap-2 border-t pt-4">
+              <MiniValue icon={<ArrowUpCircle className="size-3.5 text-emerald-500" />} label="Receitas" value={money(income)} compact />
               <MiniValue icon={<ArrowDownCircle className="size-3.5 text-red-500" />} label="Gastos" value={money(expenses)} compact />
               <MiniValue icon={<CreditCard className="size-3.5 text-orange-500" />} label="Dívidas" value={money(debtTotal)} compact />
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 font-semibold">
+                Fluxo financeiro
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">dinâmico</span>
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">Compare o que entrou e saiu do seu dinheiro.</p>
+            </div>
+            <div className="flex shrink-0 rounded-lg border bg-background/60 p-1">
+              {[7, 30, 180].map((period) => (
+                <button
+                  key={period}
+                  type="button"
+                  onClick={() => setChartPeriod(period as 7 | 30 | 180)}
+                  className={`rounded-md px-2 py-1 text-[10px] font-semibold transition-colors ${chartPeriod === period ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {period === 180 ? "6M" : `${period}D`}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mb-3 flex items-center gap-4 text-[11px]">
+            <span className="flex items-center gap-1.5 text-emerald-500"><span className="size-2 rounded-full bg-emerald-500" /> Entrou <strong>{money(chartIncome)}</strong></span>
+            <span className="flex items-center gap-1.5 text-red-500"><span className="size-2 rounded-full bg-red-500" /> Saiu <strong>{money(chartExpense)}</strong></span>
+          </div>
+          <div className="h-[175px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={movementChart} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(142 71% 45%)" stopOpacity={0.24} />
+                    <stop offset="100%" stopColor="hsl(142 71% 45%)" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="expenseFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(0 84% 60%)" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="hsl(0 84% 60%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                <XAxis dataKey="label" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval={chartPeriod === 7 ? 0 : chartPeriod === 30 ? 6 : 29} />
+                <YAxis hide domain={[0, "auto"]} />
+                <Tooltip cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }} contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", fontSize: 11, padding: "8px 10px" }} labelStyle={{ color: "hsl(var(--muted-foreground))", marginBottom: 4 }} formatter={(value, name) => [money(Number(value)), name === "income" ? "Receitas" : "Gastos"]} />
+                <Area type="monotone" dataKey="income" stroke="hsl(142 71% 45%)" fill="url(#incomeFill)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} animationDuration={500} />
+                <Area type="monotone" dataKey="expense" stroke="hsl(0 84% 60%)" fill="url(#expenseFill)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} animationDuration={500} />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </section>
 
