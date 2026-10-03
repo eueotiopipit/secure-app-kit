@@ -4,7 +4,6 @@ import { Loader2, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,16 +94,22 @@ function AuthPage() {
 
   async function handleGoogle() {
     setGoogleLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast.error("Não foi possível entrar com o Google.");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/inicio`,
+        },
+      });
+      if (error) throw error;
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível entrar com o Google.",
+      );
       setGoogleLoading(false);
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/inicio" });
   }
 
   if (signupDone) {
