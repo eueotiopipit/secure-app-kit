@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-internal-key",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 Deno.serve(async (req) => {
@@ -10,10 +10,7 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    const internalKey = req.headers.get("X-Internal-Key");
-    const internalSecret = Deno.env.get("PLUGGY_WEBHOOK_SECRET");
-    const isInternal = Boolean(internalKey && internalSecret && internalKey === internalSecret);
-    if (!authHeader && !isInternal) return json({ error: "Não autenticado." }, 401);
+    if (!authHeader) return json({ error: "Não autenticado." }, 401);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -21,10 +18,8 @@ Deno.serve(async (req) => {
       { global: { headers: authHeader ? { Authorization: authHeader } : {} } },
     );
 
-    const { data: { user }, error: userError } = authHeader
-      ? await supabase.auth.getUser()
-      : { data: { user: null }, error: null };
-    if (!isInternal && (userError || !user)) return json({ error: "Sessão inválida." }, 401);
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return json({ error: "Sessão inválida." }, 401);
 
     const clientId = Deno.env.get("PLUGGY_CLIENT_ID");
     const clientSecret = Deno.env.get("PLUGGY_CLIENT_SECRET");
@@ -47,7 +42,7 @@ Deno.serve(async (req) => {
     const item = await itemResponse.json();
     if (!itemResponse.ok) return json({ error: "Não foi possível consultar a conexão bancária." }, 502);
 
-    const targetUserId = user?.id ?? item.clientUserId;
+    const targetUserId = user.id;
     if (!targetUserId || item.clientUserId !== targetUserId) return json({ error: "Conexão bancária não pertence a este usuário." }, 403);
 
     const connector = item.connector ?? {};
