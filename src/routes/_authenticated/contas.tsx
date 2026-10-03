@@ -45,7 +45,11 @@ function ContasPage() {
   const [connectToken, setConnectToken] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
-  const [widgetReady, setWidgetReady] = useState(false);\n  const [accountName, setAccountName] = useState("");\n  const [accountType, setAccountType] = useState("checking");\n  const [openingBalance, setOpeningBalance] = useState("");\n  const [savingAccount, setSavingAccount] = useState(false);
+  const [widgetReady, setWidgetReady] = useState(false);
+  const [accountName, setAccountName] = useState("");
+  const [accountType, setAccountType] = useState("checking");
+  const [openingBalance, setOpeningBalance] = useState("");
+  const [savingAccount, setSavingAccount] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

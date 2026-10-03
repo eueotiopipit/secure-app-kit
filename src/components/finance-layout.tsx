@@ -1,4 +1,5 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";\nimport type { ReactNode } from "react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { Building2, CalendarClock, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle, Rocket, LineChart, Sparkles, Target, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
