@@ -23,15 +23,27 @@ Deno.serve(async (req) => {
 
     const clientId = Deno.env.get("PLUGGY_CLIENT_ID");
     const clientSecret = Deno.env.get("PLUGGY_CLIENT_SECRET");
-    if (!clientId || !clientSecret) return json({ error: "Integração bancária ainda não configurada no servidor." }, 503);
+    if (!clientId || !clientSecret) {
+      console.error("Pluggy credentials missing: PLUGGY_CLIENT_ID/PLUGGY_CLIENT_SECRET");
+      return json({
+        error: "Integração bancária não configurada no servidor.",
+        code: "PLUGGY_SECRETS_MISSING",
+      }, 503);
+    }
 
     const authResponse = await fetch("https://api.pluggy.ai/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clientId, clientSecret }),
     });
-    const authData = await authResponse.json();
-    if (!authResponse.ok) return json({ error: "Falha ao autenticar com o provedor bancário." }, 502);
+    const authData = await authResponse.json().catch(() => ({}));
+    if (!authResponse.ok || !authData.apiKey) {
+      console.error("Pluggy /auth failed:", authResponse.status, authData);
+      return json({
+        error: "A autenticação da integração bancária foi recusada pela Pluggy.",
+        code: "PLUGGY_AUTH_FAILED",
+      }, 502);
+    }
 
     const webhookSecret = Deno.env.get("PLUGGY_WEBHOOK_SECRET");
     const webhookUrl = webhookSecret
@@ -50,8 +62,14 @@ Deno.serve(async (req) => {
         },
       }),
     });
-    const tokenData = await tokenResponse.json();
-    if (!tokenResponse.ok) return json({ error: "Não foi possível iniciar a conexão bancária." }, 502);
+    const tokenData = await tokenResponse.json().catch(() => ({}));
+    if (!tokenResponse.ok || !tokenData.accessToken) {
+      console.error("Pluggy /connect_token failed:", tokenResponse.status, tokenData);
+      return json({
+        error: "A Pluggy recusou a criação do token de conexão.",
+        code: "PLUGGY_CONNECT_TOKEN_FAILED",
+      }, 502);
+    }
 
     return json({ accessToken: tokenData.accessToken });
   } catch (error) {
