@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Building2, CheckCircle2, Landmark, RefreshCw, Unplug, WalletCards, ShieldCheck } from "lucide-react";
-import { PluggyConnect } from "react-pluggy-connect";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,22 @@ export const Route = createFileRoute("/_authenticated/contas")({
   head: () => ({ meta: [{ title: "Contas bancárias — Plano Anti-Dívidas" }] }),
   component: ContasPage,
 });
+
+declare global {
+  interface Window {
+    PluggyConnect?: new (options: {
+      connectToken: string;
+      countries?: string[];
+      products?: string[];
+      allowFullscreen?: boolean;
+      language?: string;
+      theme?: "light" | "dark";
+      onSuccess?: (data: { item: { id: string } }) => void | Promise<void>;
+      onError?: (error: { message?: string }) => void | Promise<void>;
+      onClose?: () => void | Promise<void>;
+    }) => { init: () => void; destroy?: () => void; };
+  }
+}
 
 type Connection = {
   id: string;
@@ -29,6 +44,24 @@ function ContasPage() {
   const [connectToken, setConnectToken] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [widgetReady, setWidgetReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.PluggyConnect) {
+      setWidgetReady(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://cdn.pluggy.ai/pluggy-connect/latest/pluggy-connect.js";
+    script.async = true;
+    script.onload = () => setWidgetReady(Boolean(window.PluggyConnect));
+    script.onerror = () => toast.error("Não foi possível carregar a conexão bancária.");
+    document.head.appendChild(script);
+    return () => {
+      script.remove();
+    };
+  }, []);
 
   const { data: connections = [], isLoading } = useQuery<Connection[]>({
     queryKey: ["bank-connections", user.id],
@@ -44,6 +77,7 @@ function ContasPage() {
     try {
       const { data, error } = await supabase.functions.invoke("pluggy-token", { body: {} });
       if (error || !data?.accessToken) throw new Error(data?.error || error?.message || "Não foi possível iniciar a conexão.");
+      if (!window.PluggyConnect) throw new Error("A conexão bancária ainda está carregando. Tente novamente em alguns segundos.");
       setConnectToken(data.accessToken);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível conectar o banco.");
@@ -80,10 +114,12 @@ function ContasPage() {
 
         {connectToken ? (
           <Card className="overflow-hidden">
-            <CardHeader><CardTitle className="text-base">Escolha seu banco</CardTitle></CardHeader>
-            <CardContent className="p-0">
-              <div className="min-h-[520px]">
-                <PluggyConnect connectToken={connectToken} countries={["BR"]} products={["ACCOUNTS", "TRANSACTIONS"]} allowFullscreen onSuccess={onConnected} onError={({ message }) => { setConnectToken(null); toast.error(message || "Não foi possível conectar sua conta."); }} onClose={() => setConnectToken(null)} />
+            <CardHeader><CardTitle className="text-base">Conectando seu banco</CardTitle></CardHeader>
+            <CardContent className="flex min-h-[220px] items-center justify-center text-center">
+              <div>
+                <RefreshCw className="mx-auto mb-3 size-7 animate-spin text-primary" />
+                <p className="text-sm font-medium">{widgetReady ? "Abrindo conexão segura..." : "Carregando conexão segura..."}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Você será direcionado para autorizar o compartilhamento.</p>
               </div>
             </CardContent>
           </Card>
