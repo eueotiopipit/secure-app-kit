@@ -342,7 +342,6 @@ function EmptyState({ icon, text, action }: { icon: React.ReactNode; text: strin
     {action}
   </div>;
 }
-}
 
 function MiniValue({ icon, label, value, className = "", compact = false }: { icon: React.ReactNode; label: string; value: string; className?: string; compact?: boolean }) {
   return <div className={className}>
