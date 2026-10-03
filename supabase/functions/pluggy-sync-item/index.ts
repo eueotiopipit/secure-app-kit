@@ -10,16 +10,21 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return json({ error: "Não autenticado." }, 401);
+    const internalKey = req.headers.get("X-Internal-Key");
+    const internalSecret = Deno.env.get("PLUGGY_WEBHOOK_SECRET");
+    const isInternal = Boolean(internalKey && internalSecret && internalKey === internalSecret);
+    if (!authHeader && !isInternal) return json({ error: "Não autenticado." }, 401);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
+      { global: { headers: authHeader ? { Authorization: authHeader } : {} } },
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return json({ error: "Sessão inválida." }, 401);
+    const { data: { user }, error: userError } = authHeader
+      ? await supabase.auth.getUser()
+      : { data: { user: null }, error: null };
+    if (!isInternal && (userError || !user)) return json({ error: "Sessão inválida." }, 401);
 
     const clientId = Deno.env.get("PLUGGY_CLIENT_ID");
     const clientSecret = Deno.env.get("PLUGGY_CLIENT_SECRET");
@@ -42,7 +47,7 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "application/json", "X-API-KEY": apiKey },
       body: JSON.stringify({
         options: {
-          clientUserId: user.id,
+          clientUserId: targetUserId,
           avoidDuplicates: true,
         },
       }),
