@@ -181,7 +181,7 @@ function InicioPage() {
             <span className="flex items-center gap-1.5 text-emerald-500"><span className="size-2 rounded-full bg-emerald-500" /> Entrou <strong>{money(chartIncome)}</strong></span>
             <span className="flex items-center gap-1.5 text-red-500"><span className="size-2 rounded-full bg-red-500" /> Saiu <strong>{money(chartExpense)}</strong></span>
           </div>
-          <div className="h-[175px] w-full">
+          <div className="relative h-[175px] min-h-[175px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={movementChart} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
                 <defs>
