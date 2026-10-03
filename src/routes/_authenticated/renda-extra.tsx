@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
-  Bike, Camera, ChevronRight, Clock3, DollarSign, Gauge, Lightbulb,
+  Camera, ChevronRight, Clock3, DollarSign, Gauge,
   ShoppingBag, Store, Truck, WandSparkles, Sparkles, BriefcaseBusiness,
 } from "lucide-react";
 import { FinanceLayout } from "@/components/finance-layout";
@@ -75,4 +75,4 @@ function RendaExtraPage() {
 }
 function Stat({icon,label,value}:{icon:React.ReactNode;label:string;value:string}){return <div className="rounded-lg bg-muted/50 p-2"><div className="flex items-center gap-1 text-muted-foreground">{icon}<span>{label}</span></div><p className="mt-1 truncate font-semibold text-foreground">{value}</p></div>}
 function Info({title,value}:{title:string;value:string}){return <div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">{title}</p><p className="mt-1 font-semibold">{value}</p></div>}
-function Field({label,children}:{label:string;children:React.ReactNode}){return <label className="text-sm font-medium">{label}<div className="mt-2">{children}</div></label>}
+function Field({label,children}:{label:string;children:ReactNode}){return <label className="text-sm font-medium">{label}<div className="mt-2">{children}</div></label>}
