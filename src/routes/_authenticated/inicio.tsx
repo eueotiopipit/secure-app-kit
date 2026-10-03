@@ -26,7 +26,7 @@ import { FinanceLayout, money } from "@/components/finance-layout";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/inicio")({
-  head: () => ({ meta: [{ title: "Visão geral — Plano Anti-Dívidas" }] }),
+  head: () => ({ meta: [{ title: "Visão geral — Finza" }] }),
   component: InicioPage,
 });
 
@@ -300,29 +300,36 @@ function InicioPage() {
           </Card>
         </section>
 
-        <section className="rounded-2xl border bg-muted/30 p-5 sm:p-6">
-          <div className="mb-5">
-            <p className="flex items-center gap-2 text-lg font-semibold"><Target className="size-5 text-primary" /> Seu próximo passo</p>
-            <p className="mt-1 text-sm text-muted-foreground">Pequenas ações hoje deixam sua vida financeira mais leve.</p>
+        <section className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">Finza inteligente</p>
+            <h2 className="mt-1 text-xl font-bold tracking-tight">Próximas decisões</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Ferramentas que transformam seus números em ações.</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <ActionCard
-              icon={<PiggyBank className="size-5" />}
-              title="Junte seu dinheiro"
-              value={money(saved)}
-              description={goalTarget ? `${Math.round(savingProgress)}% das suas metas` : "Crie sua primeira meta"}
-              progress={goalTarget ? savingProgress : undefined}
-              href="/porquinhos"
-              action="Ver metas"
+          <div className="grid gap-3 lg:grid-cols-3">
+            <SmartHub
+              href="/renda-extra"
+              icon={<TrendingUp className="size-5" />}
+              title="Aumente sua renda"
+              text="Encontre formas de gerar renda e simule quanto precisa fazer por mês."
+              badge={balance < 0 ? "Prioridade" : "Oportunidades"}
+              value={balance < 0 ? "Reduzir déficit" : "Criar renda"}
             />
-            <ActionCard
-              icon={<CreditCard className="size-5" />}
-              title="Saia das dívidas"
-              value={money(debtTotal)}
-              description={debtOriginal ? `${Math.round(debtProgress)}% já quitado` : "Cadastre suas dívidas"}
-              progress={debtOriginal ? debtProgress : undefined}
-              href="/dividas"
-              action="Ver dívidas"
+            <SmartHub
+              href="/investimentos"
+              icon={<BarChart3 className="size-5" />}
+              title="Radar de investimentos"
+              text="Acompanhe ativos e entenda movimentos do mercado em um só lugar."
+              badge="Dados de mercado"
+              value="Ver cotações"
+            />
+            <SmartHub
+              href="/assistente"
+              icon={<Sparkles className="size-5" />}
+              title="Assistente financeiro"
+              text="Cruze receitas, gastos, dívidas e metas para organizar seus próximos passos."
+              badge="IA"
+              value="Abrir assistente"
             />
           </div>
         </section>
@@ -374,8 +381,21 @@ function QuickAction({ href, icon, label, tone }: { href: string; icon: React.Re
   );
 }
 
-function SmartHub({ href, icon, title, text, action }: { href: string; icon: React.ReactNode; title: string; text: string; action: string }) {
-  return <a href={href} className="group rounded-2xl border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex items-start justify-between gap-3"><span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">{icon}</span><ChevronRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5" /></div><p className="mt-4 font-semibold">{title}</p><p className="mt-1 text-sm text-muted-foreground">{text}</p><p className="mt-4 text-xs font-semibold text-primary">{action} →</p></a>;
+function SmartHub({ href, icon, title, text, badge, value }: { href: string; icon: React.ReactNode; title: string; text: string; badge: string; value: string }) {
+  return (
+    <a href={href} className="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-md">
+      <div className="flex items-start justify-between gap-3">
+        <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-105">{icon}</span>
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">{badge}</span>
+      </div>
+      <h3 className="mt-5 font-semibold tracking-tight">{title}</h3>
+      <p className="mt-1.5 min-h-10 text-sm leading-5 text-muted-foreground">{text}</p>
+      <div className="mt-5 flex items-center justify-between border-t pt-3">
+        <span className="text-xs font-semibold text-primary">{value}</span>
+        <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+      </div>
+    </a>
+  );
 }
 
 function SectionHeading({ icon, title, href, action }: { icon: React.ReactNode; title: string; href: string; action: string }) {
