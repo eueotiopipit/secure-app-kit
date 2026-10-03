@@ -4,10 +4,8 @@ import { useMemo, useState } from "react";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
-  CheckCircle2,
   ChevronRight,
   CalendarClock,
-  CircleDollarSign,
   CreditCard,
   PiggyBank,
   Plus,
