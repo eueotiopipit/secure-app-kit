@@ -222,8 +222,8 @@ function InicioPage() {
                         boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
                         fontSize: 12,
                       }}
-                      formatter={(value: number, name: string) => [
-                        money(value),
+                      formatter={(value, name) => [
+                        money(Number(value)),
                         name === "income" ? "Receitas" : "Gastos",
                       ]}
                     />
