@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { BarChart3, Building2, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle, Rocket, LineChart, Sparkles, Target } from "lucide-react";
+import { Building2, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle, Rocket, LineChart, Sparkles, Target } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
