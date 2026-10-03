@@ -29,12 +29,12 @@ function PerfilPage() {
       const { data, error } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle();
       if (!active) return;
       if (error) toast.error("Não foi possível carregar seu perfil.");
-      else setDisplayName(data?.display_name ?? user.user_metadata?.display_name ?? "");
+      else setDisplayName(data?.display_name ?? user.user_metadata?.["display_name"] ?? "");
       setLoadingProfile(false);
     }
     loadProfile();
     return () => { active = false; };
-  }, [user.id, user.user_metadata?.display_name]);
+  }, [user.id, user.user_metadata?.["display_name"]]);
 
   const initials = useMemo(() => {
     const name = displayName.trim() || "Usuário";

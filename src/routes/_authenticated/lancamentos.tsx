@@ -18,14 +18,14 @@ function LancamentosPage() {
   const { data: rows = [], isLoading } = useQuery({ queryKey: ["transactions", user.id], queryFn: async () => { const { data, error } = await supabase.from("financial_transactions").select("*").eq("user_id", user.id).order("occurred_on", { ascending: false }); if (error) throw error; return data ?? []; }});
   async function add() {
     const cents = Math.round(Number(amount.replace(",", ".")) * 100);
-    if (!description.trim() || !Number.isFinite(cents) || cents <= 0) return toast.error("Preencha descrição e valor válido.");
+    if (!description.trim() || !Number.isFinite(cents) || cents <= 0) return void toast.error("Preencha descrição e valor válido.");
     const { error } = await supabase.from("financial_transactions").insert({ user_id: user.id, type, description: description.trim(), category: category.trim() || "Geral", amount_cents: cents, occurred_on: date });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setDescription(""); setAmount(""); await qc.invalidateQueries({ queryKey: ["transactions", user.id] }); await qc.invalidateQueries({ queryKey: ["dashboard", user.id] }); toast.success("Lançamento adicionado.");
   }
   async function remove(id: string) {
     const { error } = await supabase.from("financial_transactions").delete().eq("id", id).eq("user_id", user.id);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     await qc.invalidateQueries({ queryKey: ["transactions", user.id] }); await qc.invalidateQueries({ queryKey: ["dashboard", user.id] });
   }
   return <FinanceLayout><div className="space-y-6">
