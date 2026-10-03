@@ -6,23 +6,23 @@ import { Button } from "@/components/ui/button";
 
 const items = [
   { to: "/inicio", label: "Início", icon: Home },
-  { to: "/lancamentos", label: "Lançamentos", icon: Receipt },
   { to: "/renda-extra", label: "Renda Extra", icon: Rocket },
-  { to: "/investimentos", label: "Investimentos", icon: LineChart },
-  { to: "/assistente", label: "Assistente IA", icon: Sparkles },
-  { to: "/planejamento", label: "Planejamento", icon: Target },
+  { to: "/investimentos", label: "Radar do Mercado", icon: LineChart },
+  { to: "/assistente", label: "Assistente Financeiro", icon: Sparkles },
+  { to: "/planejamento", label: "Plano de Ação", icon: Target },
+  { to: "/lancamentos", label: "Movimentações", icon: Receipt },
   { to: "/contas", label: "Contas", icon: Building2 },
   { to: "/dividas", label: "Dívidas", icon: CreditCard },
-  { to: "/porquinhos", label: "Porquinhos", icon: PiggyBank },
+  { to: "/porquinhos", label: "Metas", icon: PiggyBank },
   { to: "/perfil", label: "Perfil", icon: UserCircle },
 ] as const;
 
 const mobileItems = [
   { to: "/inicio", label: "Início", icon: Home },
-  { to: "/lancamentos", label: "Lançamentos", icon: Receipt },
-  { to: "/renda-extra", label: "Renda Extra", icon: Rocket },
-  { to: "/investimentos", label: "Investimentos", icon: LineChart },
+  { to: "/renda-extra", label: "Renda", icon: Rocket },
+  { to: "/investimentos", label: "Radar", icon: LineChart },
   { to: "/assistente", label: "IA", icon: Sparkles },
+  { to: "/planejamento", label: "Plano", icon: Target },
 ] as const;
 
 export function FinanceLayout({ children }: { children: React.ReactNode }) {
