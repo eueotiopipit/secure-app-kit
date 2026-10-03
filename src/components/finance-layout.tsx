@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";\nimport type { ReactNode } from "react";
 import { Building2, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle, Rocket, LineChart, Sparkles, Target } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +25,7 @@ const mobileItems = [
   { to: "/planejamento", label: "Plano", icon: Target },
 ] as const;
 
-export function FinanceLayout({ children }: { children: React.ReactNode }) {
+export function FinanceLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
 
