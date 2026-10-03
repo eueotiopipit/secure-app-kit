@@ -1,28 +1,28 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";\nimport type { ReactNode } from "react";
-import { Building2, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle, Rocket, LineChart, Sparkles, Target } from "lucide-react";
+import { Building2, CalendarClock, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle, Rocket, LineChart, Sparkles, Target, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
 const items = [
   { to: "/inicio", label: "Início", icon: Home },
-  { to: "/renda-extra", label: "Renda Extra", icon: Rocket },
-  { to: "/investimentos", label: "Radar do Mercado", icon: LineChart },
-  { to: "/assistente", label: "Assistente Financeiro", icon: Sparkles },
-  { to: "/planejamento", label: "Plano de Ação", icon: Target },
   { to: "/lancamentos", label: "Movimentações", icon: Receipt },
   { to: "/contas", label: "Contas", icon: Building2 },
   { to: "/dividas", label: "Dívidas", icon: CreditCard },
   { to: "/porquinhos", label: "Metas", icon: PiggyBank },
+  { to: "/planejamento", label: "Análises & Plano", icon: BarChart3 },
+  { to: "/assistente", label: "Finza IA", icon: Sparkles },
+  { to: "/renda-extra", label: "Renda Extra", icon: Rocket },
+  { to: "/investimentos", label: "Investimentos", icon: LineChart },
   { to: "/perfil", label: "Perfil", icon: UserCircle },
 ] as const;
 
 const mobileItems = [
   { to: "/inicio", label: "Início", icon: Home },
-  { to: "/renda-extra", label: "Renda", icon: Rocket },
-  { to: "/investimentos", label: "Radar", icon: LineChart },
+  { to: "/lancamentos", label: "Movimentos", icon: Receipt },
+  { to: "/contas", label: "Contas", icon: Building2 },
+  { to: "/planejamento", label: "Análises", icon: BarChart3 },
   { to: "/assistente", label: "IA", icon: Sparkles },
-  { to: "/planejamento", label: "Plano", icon: Target },
 ] as const;
 
 export function FinanceLayout({ children }: { children: ReactNode }) {
