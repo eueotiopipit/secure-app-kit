@@ -55,8 +55,7 @@ function Index() {
 
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
         <h1 className="max-w-2xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-          Sua conta, <span className="text-gradient-gold">seus dados</span>,
-          em um só lugar
+          bibito é o maior
         </h1>
         <p className="mt-4 max-w-xl text-lg text-muted-foreground">
           Crie sua conta em segundos com email e senha ou entre com o Google.
