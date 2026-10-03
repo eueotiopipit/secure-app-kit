@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Building2, CheckCircle2, Landmark, RefreshCw, Unplug, WalletCards, ShieldCheck } from "lucide-react";
+import { Building2, CheckCircle2, Landmark, RefreshCw, Unplug, WalletCards, ShieldCheck, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FinanceLayout } from "@/components/finance-layout";
+import { FinanceLayout, money } from "@/components/finance-layout";
 
 export const Route = createFileRoute("/_authenticated/contas")({
   head: () => ({ meta: [{ title: "Contas bancárias — Plano Anti-Dívidas" }] }),
@@ -45,7 +45,7 @@ function ContasPage() {
   const [connectToken, setConnectToken] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
-  const [widgetReady, setWidgetReady] = useState(false);
+  const [widgetReady, setWidgetReady] = useState(false);\n  const [accountName, setAccountName] = useState("");\n  const [accountType, setAccountType] = useState("checking");\n  const [openingBalance, setOpeningBalance] = useState("");\n  const [savingAccount, setSavingAccount] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -108,6 +108,36 @@ function ContasPage() {
       return (data ?? []) as Connection[];
     },
   });
+
+  const { data: manualAccounts = [], isLoading: manualAccountsLoading } = useQuery<any[]>({
+    queryKey: ["finance-accounts", user.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("finance_accounts").select("id,name,account_type,opening_balance_cents,color").eq("user_id", user.id).order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  async function addManualAccount() {
+    const balance = Math.round(Number(openingBalance.replace(",", ".")) * 100);
+    if (!accountName.trim()) return void toast.error("Digite o nome da conta.");
+    if (!Number.isFinite(balance)) return void toast.error("Informe um saldo válido.");
+    setSavingAccount(true);
+    const { error } = await supabase.from("finance_accounts").insert({ user_id: user.id, name: accountName.trim(), account_type: accountType, opening_balance_cents: balance });
+    setSavingAccount(false);
+    if (error) return void toast.error(error.message);
+    setAccountName("");
+    setOpeningBalance("");
+    await queryClient.invalidateQueries({ queryKey: ["finance-accounts", user.id] });
+    toast.success("Conta cadastrada.");
+  }
+
+  async function removeManualAccount(id: string) {
+    const { error } = await supabase.from("finance_accounts").delete().eq("id", id).eq("user_id", user.id);
+    if (error) return void toast.error(error.message);
+    await queryClient.invalidateQueries({ queryKey: ["finance-accounts", user.id] });
+    toast.success("Conta removida.");
+  }
 
   async function connectBank() {
     setConnecting(true);
@@ -174,6 +204,17 @@ function ContasPage() {
                 <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t pt-4 text-xs text-muted-foreground"><span className="flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-emerald-500" /> Credenciais não ficam no app</span><span className="flex items-center gap-1.5"><CheckCircle2 className="size-3.5 text-emerald-500" /> Você autoriza no banco</span></div>
               </CardContent>
             </Card>
+
+            <section className="space-y-3">
+              <div><h2 className="font-semibold">Minhas contas</h2><p className="mt-1 text-xs text-muted-foreground">Cadastre carteira, conta corrente, poupança ou cartão para organizar seu dinheiro.</p></div>
+              <Card><CardContent className="grid gap-3 p-4 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-end">
+                <div><label className="text-xs font-medium">Nome</label><input className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm" value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="Ex.: Nubank" /></div>
+                <div><label className="text-xs font-medium">Tipo</label><select className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm" value={accountType} onChange={e => setAccountType(e.target.value)}><option value="checking">Conta corrente</option><option value="savings">Poupança</option><option value="wallet">Carteira</option><option value="credit_card">Cartão</option></select></div>
+                <div><label className="text-xs font-medium">Saldo inicial</label><input className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm" value={openingBalance} onChange={e => setOpeningBalance(e.target.value)} inputMode="decimal" placeholder="0,00" /></div>
+                <Button onClick={addManualAccount} disabled={savingAccount}><Plus className="size-4" />{savingAccount ? "Salvando..." : "Cadastrar"}</Button>
+              </CardContent></Card>
+              {manualAccountsLoading ? <p className="text-sm text-muted-foreground">Carregando contas...</p> : manualAccounts.length > 0 && <div className="grid gap-2 sm:grid-cols-2">{manualAccounts.map(account => <Card key={account.id}><CardContent className="flex items-center gap-3 p-4"><div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><WalletCards className="size-5" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{account.name}</p><p className="text-xs text-muted-foreground">{account.account_type === "checking" ? "Conta corrente" : account.account_type === "savings" ? "Poupança" : account.account_type === "wallet" ? "Carteira" : "Cartão"}</p><p className="mt-1 text-sm font-bold">{money(account.opening_balance_cents)}</p></div><Button variant="ghost" size="icon" onClick={() => removeManualAccount(account.id)} aria-label="Excluir conta"><Trash2 className="size-4" /></Button></CardContent></Card>)}</div>}
+            </section>
 
             <section className="space-y-3">
               <div><h2 className="font-semibold">Contas conectadas</h2><p className="mt-1 text-xs text-muted-foreground">Os extratos importados aparecem automaticamente nos seus lançamentos.</p></div>
