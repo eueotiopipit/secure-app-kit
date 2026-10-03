@@ -22,8 +22,9 @@ declare global {
       allowFullscreen?: boolean;
       language?: string;
       theme?: "light" | "dark";
+      forceOauthInBrowser?: boolean;
       onSuccess?: (data: { item: { id: string } }) => void | Promise<void>;
-      onError?: (error: { message?: string }) => void | Promise<void>;
+      onError?: (error: { message?: string; data?: { item?: { id: string } } }) => void | Promise<void>;
       onClose?: () => void | Promise<void>;
     }) => { init: () => void; destroy?: () => void; };
   }
@@ -63,6 +64,42 @@ function ContasPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!connectToken || !widgetReady || !window.PluggyConnect) return;
+
+    let widget: { init: () => void; destroy?: () => void } | undefined;
+
+    try {
+      widget = new window.PluggyConnect({
+        connectToken,
+        countries: ["BR"],
+        products: ["ACCOUNTS", "TRANSACTIONS"],
+        allowFullscreen: true,
+        language: "pt",
+        theme: "dark",
+        forceOauthInBrowser: true,
+        onSuccess: onConnected,
+        onError: ({ message }) => {
+          setConnectToken(null);
+          toast.error(message || "Não foi possível concluir a conexão bancária.");
+        },
+        onClose: () => {
+          setConnectToken(null);
+        },
+      });
+
+      widget.init();
+    } catch (error) {
+      console.error(error);
+      setConnectToken(null);
+      toast.error("Não foi possível abrir a conexão bancária.");
+    }
+
+    return () => {
+      widget?.destroy?.();
+    };
+  }, [connectToken, widgetReady]);
+
   const { data: connections = [], isLoading } = useQuery<Connection[]>({
     queryKey: ["bank-connections", user.id],
     queryFn: async () => {
@@ -77,7 +114,7 @@ function ContasPage() {
     try {
       const { data, error } = await supabase.functions.invoke("pluggy-token", { body: {} });
       if (error || !data?.accessToken) throw new Error(data?.error || error?.message || "Não foi possível iniciar a conexão.");
-      if (!window.PluggyConnect) throw new Error("A conexão bancária ainda está carregando. Tente novamente em alguns segundos.");
+      if (!window.PluggyConnect || !widgetReady) throw new Error("A conexão bancária ainda está carregando. Tente novamente em alguns segundos.");
       setConnectToken(data.accessToken);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível conectar o banco.");
