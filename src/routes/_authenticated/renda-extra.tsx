@@ -29,7 +29,7 @@ function RendaExtraPage() {
   const [goal, setGoal] = useState(2000);
   const [days, setDays] = useState(26);
   const [hours, setHours] = useState(4);
-  const item = ideas.find(x => x.id === active) ?? ideas[0];
+  const item = (ideas.find(x => x.id === active) ?? ideas[0])!;
   const Icon = item.icon;
 
   const simulation = useMemo(() => {
