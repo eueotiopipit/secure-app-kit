@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, type ReactNode } from "react";
 import {
@@ -261,9 +261,9 @@ function InicioPage() {
             <CardContent className="p-0">
               <div className="flex items-center justify-between border-b p-4">
                 <div><h2 className="flex items-center gap-2 font-semibold"><ReceiptText className="size-4 text-primary" /> Últimas movimentações</h2><p className="mt-1 text-xs text-muted-foreground">Suas atividades mais recentes</p></div>
-                <Button asChild variant="ghost" size="sm" className="text-xs"><a href="/lancamentos">Ver todas <ChevronRight className="size-3.5" /></a></Button>
+                <Button asChild variant="ghost" size="sm" className="text-xs"><Link to="/lancamentos">Ver todas <ChevronRight className="size-3.5" /></Link></Button>
               </div>
-              {isLoading ? <div className="p-5 text-sm text-muted-foreground">Carregando...</div> : recentTransactions.length === 0 ? <EmptyState icon={<Receipt className="size-4" />} text="Nenhuma movimentação registrada." action={<Button asChild size="sm"><a href="/lancamentos"><Plus className="size-4" />Adicionar</a></Button>} /> : <div>{recentTransactions.map((t) => <TransactionRow key={t.id} description={t.description} category={t.category} date={t.occurred_on} amount={t.amount_cents} positive={t.type === "income"} />)}</div>}
+              {isLoading ? <div className="p-5 text-sm text-muted-foreground">Carregando...</div> : recentTransactions.length === 0 ? <EmptyState icon={<Receipt className="size-4" />} text="Nenhuma movimentação registrada." action={<Button asChild size="sm"><Link to="/lancamentos"><Plus className="size-4" />Adicionar</Link></Button>} /> : <div>{recentTransactions.map((t) => <TransactionRow key={t.id} description={t.description} category={t.category} date={t.occurred_on} amount={t.amount_cents} positive={t.type === "income"} />)}</div>}
             </CardContent>
           </Card>
         </section>
@@ -302,7 +302,7 @@ function InicioPage() {
               <div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Dívidas</p><h2 className="mt-1 text-lg font-bold">{money(debtTotal)}</h2></div><div className="flex size-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500"><CreditCard className="size-5" /></div></div>
               <div className="mt-4 flex justify-between text-xs"><span className="text-muted-foreground">Progresso quitado</span><span className="font-semibold">{Math.round(debtProgress)}%</span></div>
               <Progress value={debtProgress} className="mt-2 h-1.5" />
-              <Button asChild variant="ghost" size="sm" className="mt-3 px-0 text-xs"><a href="/dividas">Gerenciar dívidas <ChevronRight className="size-3.5" /></a></Button>
+              <Button asChild variant="ghost" size="sm" className="mt-3 px-0 text-xs"><Link to="/dividas">Gerenciar dívidas <ChevronRight className="size-3.5" /></Link></Button>
             </CardContent>
           </Card>
           <Card>
@@ -310,7 +310,7 @@ function InicioPage() {
               <div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Objetivos guardados</p><h2 className="mt-1 text-lg font-bold">{money(saved)}</h2></div><div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Target className="size-5" /></div></div>
               <div className="mt-4 flex justify-between text-xs"><span className="text-muted-foreground">Progresso das metas</span><span className="font-semibold">{Math.round(savingProgress)}%</span></div>
               <Progress value={savingProgress} className="mt-2 h-1.5" />
-              <Button asChild variant="ghost" size="sm" className="mt-3 px-0 text-xs"><a href="/porquinhos">Ver objetivos <ChevronRight className="size-3.5" /></a></Button>
+              <Button asChild variant="ghost" size="sm" className="mt-3 px-0 text-xs"><Link to="/porquinhos">Ver objetivos <ChevronRight className="size-3.5" /></Link></Button>
             </CardContent>
           </Card>
         </section>
@@ -352,19 +352,19 @@ function QuickAction({ href, icon, label, tone }: { href: string; icon: ReactNod
 
   return (
     <Button asChild variant="outline" className="group h-auto min-h-14 justify-start gap-2.5 rounded-xl border-border/80 px-3 text-left transition-all hover:-translate-y-0.5 hover:bg-accent/40 sm:justify-center">
-      <a href={href}>
+      <Link to={href}>
         <span className={`flex size-9 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105 ${toneClass}`}>
           <span className="[&>svg]:size-5">{icon}</span>
         </span>
         <span className="text-xs font-semibold sm:text-sm">{label}</span>
-      </a>
+      </Link>
     </Button>
   );
 }
 
 function SmartHub({ href, icon, title, text, badge, value }: { href: string; icon: ReactNode; title: string; text: string; badge: string; value: string }) {
   return (
-    <a href={href} className="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-md">
+    <Link to={href} className="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-105">{icon}</span>
         <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">{badge}</span>
@@ -375,19 +375,19 @@ function SmartHub({ href, icon, title, text, badge, value }: { href: string; ico
         <span className="text-xs font-semibold text-primary">{value}</span>
         <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
       </div>
-    </a>
+    </Link>
   );
 }
 
 function SectionHeading({ icon, title, href, action }: { icon: ReactNode; title: string; href: string; action: string }) {
-  return <div className="flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 font-semibold">{icon}{title}</h2><Button asChild variant="ghost" size="sm" className="gap-1 text-xs"><a href={href}>{action}<ChevronRight className="size-3.5" /></a></Button></div>;
+  return <div className="flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 font-semibold">{icon}{title}</h2><Button asChild variant="ghost" size="sm" className="gap-1 text-xs"><Link to={href}>{action}<ChevronRight className="size-3.5" /></Link></Button></div>;
 }
 
 function ActionCard({ icon, title, value, description, progress, href, action }: { icon: ReactNode; title: string; value: string; description: string; progress?: number | undefined; href: string; action: string }) {
   return <div className="rounded-xl border bg-card p-4 transition-colors hover:bg-accent/40">
     <div className="flex items-start justify-between gap-3">
       <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</div>
-      <Button asChild variant="ghost" size="sm" className="h-8 px-2"><a href={href}>{action}<ChevronRight className="ml-1 size-3.5" /></a></Button>
+      <Button asChild variant="ghost" size="sm" className="h-8 px-2"><Link to={href}>{action}<ChevronRight className="ml-1 size-3.5" /></Link></Button>
     </div>
     <p className="mt-4 text-sm font-medium">{title}</p>
     <p className="mt-1 text-xl font-bold">{value}</p>
