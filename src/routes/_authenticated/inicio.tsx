@@ -127,6 +127,14 @@ function InicioPage() {
   return (
     <FinanceLayout>
       <div className="space-y-6 pb-8">
+        <section className="overflow-hidden rounded-2xl border border-primary/20 bg-black shadow-sm">
+          <img
+            src="/finza-logo-home.webp"
+            alt="Finza — seu futuro financeiro começa agora"
+            className="block h-auto max-h-[230px] w-full object-cover object-center sm:max-h-[270px]"
+          />
+        </section>
+
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
