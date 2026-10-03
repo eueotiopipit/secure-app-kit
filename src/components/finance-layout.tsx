@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Building2, CalendarClock, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle, Rocket, LineChart, Sparkles, Target, BarChart3 } from "lucide-react";
+import { Building2, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle, Rocket, LineChart, Sparkles, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function FinanceLayout({ children }: { children: ReactNode }) {
     navigate({ to: "/auth", replace: true });
   }
 
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background" data-finza-version="preview-sections">
     <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/inicio" className="text-lg font-bold tracking-tight">Finza</Link>
