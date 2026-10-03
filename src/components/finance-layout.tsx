@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { BarChart3, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle } from "lucide-react";
+import { BarChart3, Building2, CreditCard, Home, LogOut, PiggyBank, Receipt, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 const items = [
   { to: "/inicio", label: "Início", icon: Home },
   { to: "/lancamentos", label: "Lançamentos", icon: Receipt },
+  { to: "/contas", label: "Contas", icon: Building2 },
   { to: "/dividas", label: "Dívidas", icon: CreditCard },
   { to: "/porquinhos", label: "Porquinhos", icon: PiggyBank },
   { to: "/planejamento", label: "Planejamento", icon: BarChart3 },
