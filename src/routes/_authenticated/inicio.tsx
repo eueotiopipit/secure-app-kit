@@ -7,7 +7,6 @@ import {
   ChevronRight,
   CalendarClock,
   CreditCard,
-  Landmark,
   PiggyBank,
   Plus,
   Receipt,
@@ -134,23 +133,6 @@ function InicioPage() {
           <p className="text-sm text-muted-foreground">Veja o que está acontecendo com seu dinheiro hoje.</p>
         </header>
 
-        <section className="overflow-hidden rounded-2xl border border-primary/20 bg-primary/[0.04] shadow-sm">
-          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Landmark className="size-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Conecte seu banco</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Importe automaticamente saldo e movimentações pelo Open Finance.</p>
-              </div>
-            </div>
-            <Button asChild size="sm" className="shrink-0">
-              <a href="/contas">Conectar banco <ChevronRight className="size-4" /></a>
-            </Button>
-          </div>
-        </section>
-
         <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
           <div className="p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
@@ -199,7 +181,7 @@ function InicioPage() {
             <span className="flex items-center gap-1.5 text-emerald-500"><span className="size-2 rounded-full bg-emerald-500" /> Entrou <strong>{money(chartIncome)}</strong></span>
             <span className="flex items-center gap-1.5 text-red-500"><span className="size-2 rounded-full bg-red-500" /> Saiu <strong>{money(chartExpense)}</strong></span>
           </div>
-          <div className="relative h-[175px] min-h-[175px] w-full">
+          <div className="h-[175px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={movementChart} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
                 <defs>
