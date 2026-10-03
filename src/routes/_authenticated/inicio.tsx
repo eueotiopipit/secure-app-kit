@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -127,14 +127,6 @@ function InicioPage() {
   return (
     <FinanceLayout>
       <div className="space-y-6 pb-8">
-        <section className="overflow-hidden rounded-2xl border border-primary/20 bg-black shadow-sm">
-          <img
-            src="/finza-logo-home.webp"
-            alt="Finza — seu futuro financeiro começa agora"
-            className="block h-auto max-h-[230px] w-full object-cover object-center sm:max-h-[270px]"
-          />
-        </section>
-
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
@@ -328,14 +320,14 @@ function InicioPage() {
 }
 
 
-function MetricBox({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+function MetricBox({ label, value, icon }: { label: string; value: string; icon: ReactNode }) {
   return <div className="rounded-xl border bg-background/50 p-3">
     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">{icon}{label}</div>
     <p className="mt-1 text-sm font-bold truncate">{value}</p>
   </div>;
 }
 
-function EmptyState({ icon, text, action }: { icon: React.ReactNode; text: string; action?: React.ReactNode }) {
+function EmptyState({ icon, text, action }: { icon: ReactNode; text: string; action?: ReactNode }) {
   return <div className="flex flex-col items-center justify-center gap-2 p-6 text-center">
     <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">{icon}</div>
     <p className="text-sm text-muted-foreground">{text}</p>
@@ -343,14 +335,14 @@ function EmptyState({ icon, text, action }: { icon: React.ReactNode; text: strin
   </div>;
 }
 
-function MiniValue({ icon, label, value, className = "", compact = false }: { icon: React.ReactNode; label: string; value: string; className?: string; compact?: boolean }) {
+function MiniValue({ icon, label, value, className = "", compact = false }: { icon: ReactNode; label: string; value: string; className?: string; compact?: boolean }) {
   return <div className={className}>
     <div className={`mb-0.5 flex items-center gap-1.5 text-muted-foreground ${compact ? "text-[10px]" : "text-xs"}`}>{icon}{label}</div>
     <p className={`truncate font-semibold ${compact ? "text-xs" : "text-sm"}`}>{value}</p>
   </div>;
 }
 
-function QuickAction({ href, icon, label, tone }: { href: string; icon: React.ReactNode; label: string; tone: "income" | "expense" | "debt" | "save" }) {
+function QuickAction({ href, icon, label, tone }: { href: string; icon: ReactNode; label: string; tone: "income" | "expense" | "debt" | "save" }) {
   const toneClass = {
     income: "bg-emerald-500/10 text-emerald-500",
     expense: "bg-red-500/10 text-red-500",
@@ -370,7 +362,7 @@ function QuickAction({ href, icon, label, tone }: { href: string; icon: React.Re
   );
 }
 
-function SmartHub({ href, icon, title, text, badge, value }: { href: string; icon: React.ReactNode; title: string; text: string; badge: string; value: string }) {
+function SmartHub({ href, icon, title, text, badge, value }: { href: string; icon: ReactNode; title: string; text: string; badge: string; value: string }) {
   return (
     <a href={href} className="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
@@ -387,11 +379,11 @@ function SmartHub({ href, icon, title, text, badge, value }: { href: string; ico
   );
 }
 
-function SectionHeading({ icon, title, href, action }: { icon: React.ReactNode; title: string; href: string; action: string }) {
+function SectionHeading({ icon, title, href, action }: { icon: ReactNode; title: string; href: string; action: string }) {
   return <div className="flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 font-semibold">{icon}{title}</h2><Button asChild variant="ghost" size="sm" className="gap-1 text-xs"><a href={href}>{action}<ChevronRight className="size-3.5" /></a></Button></div>;
 }
 
-function ActionCard({ icon, title, value, description, progress, href, action }: { icon: React.ReactNode; title: string; value: string; description: string; progress?: number | undefined; href: string; action: string }) {
+function ActionCard({ icon, title, value, description, progress, href, action }: { icon: ReactNode; title: string; value: string; description: string; progress?: number | undefined; href: string; action: string }) {
   return <div className="rounded-xl border bg-card p-4 transition-colors hover:bg-accent/40">
     <div className="flex items-start justify-between gap-3">
       <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</div>
