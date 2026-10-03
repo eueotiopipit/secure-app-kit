@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -10,7 +11,10 @@ import {
   PiggyBank,
   Plus,
   Receipt,
+  ReceiptText,
   Sparkles,
+  TrendingDown,
+  TrendingUp,
   Target,
   Wallet,
 } from "lucide-react";
@@ -19,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { FinanceLayout, money } from "@/components/finance-layout";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/inicio")({
   head: () => ({ meta: [{ title: "Visão geral — Plano Anti-Dívidas" }] }),
@@ -63,6 +68,41 @@ function InicioPage() {
   const savingProgress = goalTarget > 0 ? Math.min(100, (saved / goalTarget) * 100) : 0;
   const recentTransactions = transactions.slice(0, 4);
   const topGoals = (data?.pigs ?? []).slice(0, 2);
+  const [chartPeriod, setChartPeriod] = useState<7 | 30>(7);
+
+  const movementChart = useMemo(() => {
+    const now = new Date();
+    const days = Array.from({ length: chartPeriod }, (_, index) => {
+      const date = new Date(now);
+      date.setHours(12, 0, 0, 0);
+      date.setDate(now.getDate() - (chartPeriod - 1 - index));
+      return date;
+    });
+
+    return days.map((date) => {
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+      const dayTransactions = transactions.filter((t) => t.occurred_on === key);
+      const dayIncome = dayTransactions
+        .filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + t.amount_cents, 0);
+      const dayExpense = dayTransactions
+        .filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + t.amount_cents, 0);
+
+      return {
+        label: date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", ""),
+        income: dayIncome,
+        expense: dayExpense,
+      };
+    });
+  }, [transactions, chartPeriod]);
+
+  const chartIncome = movementChart.reduce((sum, day) => sum + day.income, 0);
+  const chartExpense = movementChart.reduce((sum, day) => sum + day.expense, 0);
 
   return (
     <FinanceLayout>
@@ -99,14 +139,126 @@ function InicioPage() {
         </section>
 
         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <QuickAction href="/lancamentos" icon={<ArrowUpCircle />} label="Adicionar receita" />
-          <QuickAction href="/lancamentos" icon={<ArrowDownCircle />} label="Adicionar gasto" />
-          <QuickAction href="/dividas" icon={<CreditCard />} label="Pagar dívida" />
-          <QuickAction href="/porquinhos" icon={<PiggyBank />} label="Guardar dinheiro" />
+          <QuickAction href="/lancamentos" icon={<ArrowUpCircle />} tone="income" label="Adicionar receita" />
+          <QuickAction href="/lancamentos" icon={<ArrowDownCircle />} tone="expense" label="Adicionar gasto" />
+          <QuickAction href="/dividas" icon={<CreditCard />} tone="debt" label="Pagar dívida" />
+          <QuickAction href="/porquinhos" icon={<PiggyBank />} tone="save" label="Guardar dinheiro" />
         </section>
 
         <section className="space-y-3">
-          <SectionHeading icon={<Receipt className="size-5" />} title="Últimas movimentações" href="/lancamentos" action="Ver todas" />
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 font-semibold">
+                <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <TrendingUp className="size-4" />
+                </span>
+                Movimentações
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">Receitas e gastos ao longo do período</p>
+            </div>
+            <div className="flex rounded-lg border bg-card p-1">
+              {[7, 30].map((period) => (
+                <button
+                  key={period}
+                  type="button"
+                  onClick={() => setChartPeriod(period as 7 | 30)}
+                  className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                    chartPeriod === period ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {period}D
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Card className="overflow-hidden">
+            <CardContent className="p-4 sm:p-5">
+              <div className="mb-3 grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="flex size-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                    <TrendingUp className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-muted-foreground">Receitas</p>
+                    <p className="truncate text-sm font-bold text-emerald-500">{money(chartIncome)}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="flex size-8 items-center justify-center rounded-full bg-red-500/10 text-red-500">
+                    <TrendingDown className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-muted-foreground">Gastos</p>
+                    <p className="truncate text-sm font-bold text-red-500">{money(chartExpense)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-44 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={movementChart} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
+                    <XAxis
+                      dataKey="label"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10 }}
+                      interval={chartPeriod === 30 ? 4 : 0}
+                      dy={8}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10 }}
+                      width={38}
+                      tickFormatter={(value) => value === 0 ? "0" : `R$ ${Math.round(value / 100)}`}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "4 4" }}
+                      contentStyle={{
+                        borderRadius: 12,
+                        border: "1px solid hsl(var(--border))",
+                        background: "hsl(var(--card))",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+                        fontSize: 12,
+                      }}
+                      formatter={(value: number, name: string) => [
+                        money(value),
+                        name === "income" ? "Receitas" : "Gastos",
+                      ]}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="income"
+                      stroke="hsl(142 71% 45%)"
+                      strokeWidth={2.5}
+                      dot={false}
+                      activeDot={{ r: 5, strokeWidth: 2 }}
+                      animationDuration={550}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="expense"
+                      stroke="hsl(0 84% 60%)"
+                      strokeWidth={2.5}
+                      dot={false}
+                      activeDot={{ r: 5, strokeWidth: 2 }}
+                      animationDuration={550}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="mt-2 flex items-center justify-center gap-5 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-emerald-500" />Receitas</span>
+                <span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-red-500" />Gastos</span>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="space-y-3">
+          <SectionHeading icon={<ReceiptText className="size-5" />} title="Últimas movimentações" href="/lancamentos" action="Ver todas" />
           <Card>
             <CardContent className="p-0">
               {isLoading ? (
@@ -178,10 +330,24 @@ function MiniValue({ icon, label, value, className = "" }: { icon: React.ReactNo
   return <div className={className}><div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">{icon}{label}</div><p className="truncate text-sm font-semibold">{value}</p></div>;
 }
 
-function QuickAction({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
-  return <Button asChild variant="outline" className="h-auto min-h-14 justify-start gap-2 rounded-xl px-3 text-left sm:justify-center">
-    <a href={href}>{icon && <span className="text-primary [&>svg]:size-5">{icon}</span>}<span className="text-xs font-medium sm:text-sm">{label}</span></a>
-  </Button>;
+function QuickAction({ href, icon, label, tone }: { href: string; icon: React.ReactNode; label: string; tone: "income" | "expense" | "debt" | "save" }) {
+  const toneClass = {
+    income: "bg-emerald-500/10 text-emerald-500",
+    expense: "bg-red-500/10 text-red-500",
+    debt: "bg-orange-500/10 text-orange-500",
+    save: "bg-primary/10 text-primary",
+  }[tone];
+
+  return (
+    <Button asChild variant="outline" className="group h-auto min-h-14 justify-start gap-2.5 rounded-xl border-border/80 px-3 text-left transition-all hover:-translate-y-0.5 hover:bg-accent/40 sm:justify-center">
+      <a href={href}>
+        <span className={`flex size-9 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105 ${toneClass}`}>
+          <span className="[&>svg]:size-5">{icon}</span>
+        </span>
+        <span className="text-xs font-semibold sm:text-sm">{label}</span>
+      </a>
+    </Button>
+  );
 }
 
 function SectionHeading({ icon, title, href, action }: { icon: React.ReactNode; title: string; href: string; action: string }) {
