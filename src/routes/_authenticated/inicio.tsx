@@ -6,6 +6,7 @@ import {
   ArrowUpCircle,
   CheckCircle2,
   ChevronRight,
+  CalendarClock,
   CircleDollarSign,
   CreditCard,
   PiggyBank,
@@ -104,6 +105,23 @@ function InicioPage() {
   const chartIncome = movementChart.reduce((sum, day) => sum + day.income, 0);
   const chartExpense = movementChart.reduce((sum, day) => sum + day.expense, 0);
 
+  const futureTransactions = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(today);
+    end.setDate(end.getDate() + 7);
+    return transactions
+      .filter((t) => {
+        const date = new Date(`${t.occurred_on}T12:00:00`);
+        return date > today && date <= end;
+      })
+      .sort((a, b) => a.occurred_on.localeCompare(b.occurred_on));
+  }, [transactions]);
+
+  const futureIncome = futureTransactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount_cents, 0);
+  const futureExpense = futureTransactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount_cents, 0);
+  const futureByDay = Array.from(new Set(futureTransactions.map((t) => t.occurred_on)));
+
   return (
     <FinanceLayout>
       <div className="space-y-7 pb-6">
@@ -126,14 +144,54 @@ function InicioPage() {
                 </div>
                 <p className="text-3xl font-bold tracking-tight sm:text-4xl">{money(balance)}</p>
               </div>
-              <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <CircleDollarSign className="size-6" />
+              <div className="w-[145px] shrink-0 sm:w-[190px]">
+                <div className="mb-1 flex items-center justify-end gap-2">
+                  <span className="text-[10px] font-medium text-muted-foreground">${chartPeriod} dias</span>
+                  <div className="flex rounded-md border bg-background/70 p-0.5">
+                    {[7, 30].map((period) => (
+                      <button
+                        key={period}
+                        type="button"
+                        onClick={() => setChartPeriod(period as 7 | 30)}
+                        className={`rounded px-1.5 py-0.5 text-[9px] font-semibold transition-colors ${
+                          chartPeriod === period ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                        }`}
+                      >
+                        {period}D
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="h-[72px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={movementChart} margin={{ top: 4, right: 2, left: -28, bottom: 0 }}>
+                      <XAxis dataKey="label" hide />
+                      <YAxis hide domain={["auto", "auto"]} />
+                      <Tooltip
+                        cursor={false}
+                        contentStyle={{
+                          borderRadius: 10,
+                          border: "1px solid hsl(var(--border))",
+                          background: "hsl(var(--card))",
+                          fontSize: 11,
+                          padding: "6px 8px",
+                        }}
+                        formatter={(value, name) => [
+                          money(Number(value)),
+                          name === "income" ? "Receitas" : "Gastos",
+                        ]}
+                      />
+                      <Line type="monotone" dataKey="income" stroke="hsl(142 71% 45%)" strokeWidth={2} dot={false} animationDuration={450} />
+                      <Line type="monotone" dataKey="expense" stroke="hsl(0 84% 60%)" strokeWidth={2} dot={false} animationDuration={450} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-3 border-t pt-4 sm:grid-cols-3">
-              <MiniValue icon={<ArrowUpCircle className="size-4 text-emerald-600" />} label="Receitas" value={money(income)} />
-              <MiniValue icon={<ArrowDownCircle className="size-4 text-red-500" />} label="Gastos" value={money(expenses)} />
-              <MiniValue icon={<CreditCard className="size-4 text-orange-500" />} label="Dívidas" value={money(debtTotal)} className="col-span-2 sm:col-span-1" />
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-3">
+              <MiniValue icon={<ArrowUpCircle className="size-3.5 text-emerald-600" />} label="Receitas" value={money(income)} compact />
+              <MiniValue icon={<ArrowDownCircle className="size-3.5 text-red-500" />} label="Gastos" value={money(expenses)} compact />
+              <MiniValue icon={<CreditCard className="size-3.5 text-orange-500" />} label="Dívidas" value={money(debtTotal)} compact />
             </div>
           </div>
         </section>
@@ -150,109 +208,62 @@ function InicioPage() {
             <div>
               <h2 className="flex items-center gap-2 font-semibold">
                 <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <TrendingUp className="size-4" />
+                  <CalendarClock className="size-4" />
                 </span>
-                Movimentações
+                Próximos dias
               </h2>
-              <p className="mt-1 text-xs text-muted-foreground">Receitas e gastos ao longo do período</p>
+              <p className="mt-1 text-xs text-muted-foreground">O que está previsto para entrar e sair</p>
             </div>
-            <div className="flex rounded-lg border bg-card p-1">
-              {[7, 30].map((period) => (
-                <button
-                  key={period}
-                  type="button"
-                  onClick={() => setChartPeriod(period as 7 | 30)}
-                  className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-all ${
-                    chartPeriod === period ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {period}D
-                </button>
-              ))}
+            <div className="text-right">
+              <p className="text-[10px] text-muted-foreground">Próximos 7 dias</p>
+              <p className="text-xs font-semibold">
+                <span className="text-emerald-500">+{money(futureIncome)}</span>
+                <span className="mx-1 text-muted-foreground">·</span>
+                <span className="text-red-500">-{money(futureExpense)}</span>
+              </p>
             </div>
           </div>
-
-          <Card className="overflow-hidden">
-            <CardContent className="p-4 sm:p-5">
-              <div className="mb-3 grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex size-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
-                    <TrendingUp className="size-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-muted-foreground">Receitas</p>
-                    <p className="truncate text-sm font-bold text-emerald-500">{money(chartIncome)}</p>
+          <Card>
+            <CardContent className="p-3">
+              {futureByDay.length === 0 ? (
+                <div className="flex items-center gap-3 rounded-xl border border-dashed p-4">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <CalendarClock className="size-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Nada agendado para os próximos 7 dias</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">Cadastre uma movimentação com uma data futura para acompanhar aqui.</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="flex size-8 items-center justify-center rounded-full bg-red-500/10 text-red-500">
-                    <TrendingDown className="size-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-muted-foreground">Gastos</p>
-                    <p className="truncate text-sm font-bold text-red-500">{money(chartExpense)}</p>
-                  </div>
+              ) : (
+                <div className="space-y-2">
+                  {futureByDay.map((date) => {
+                    const dayRows = futureTransactions.filter((t) => t.occurred_on === date);
+                    const dayIncome = dayRows.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount_cents, 0);
+                    const dayExpense = dayRows.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount_cents, 0);
+                    return (
+                      <div key={date} className="flex items-center gap-3 rounded-xl border p-3">
+                        <div className="flex size-10 shrink-0 flex-col items-center justify-center rounded-lg bg-muted/60">
+                          <span className="text-[10px] font-medium text-muted-foreground">
+                            {new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}
+                          </span>
+                          <span className="text-sm font-bold">{new Date(`${date}T12:00:00`).getDate()}</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium">{dayRows.length} {dayRows.length === 1 ? "movimentação" : "movimentações"}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
+                          </p>
+                        </div>
+                        <div className="text-right text-xs font-semibold">
+                          {dayIncome > 0 && <p className="text-emerald-500">+{money(dayIncome)}</p>}
+                          {dayExpense > 0 && <p className="text-red-500">-{money(dayExpense)}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-
-              <div className="h-44 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={movementChart} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
-                    <XAxis
-                      dataKey="label"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10 }}
-                      interval={chartPeriod === 30 ? 4 : 0}
-                      dy={8}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10 }}
-                      width={38}
-                      tickFormatter={(value) => value === 0 ? "0" : `R$ ${Math.round(value / 100)}`}
-                    />
-                    <Tooltip
-                      cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "4 4" }}
-                      contentStyle={{
-                        borderRadius: 12,
-                        border: "1px solid hsl(var(--border))",
-                        background: "hsl(var(--card))",
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
-                        fontSize: 12,
-                      }}
-                      formatter={(value, name) => [
-                        money(Number(value)),
-                        name === "income" ? "Receitas" : "Gastos",
-                      ]}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="income"
-                      stroke="hsl(142 71% 45%)"
-                      strokeWidth={2.5}
-                      dot={false}
-                      activeDot={{ r: 5, strokeWidth: 2 }}
-                      animationDuration={550}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="expense"
-                      stroke="hsl(0 84% 60%)"
-                      strokeWidth={2.5}
-                      dot={false}
-                      activeDot={{ r: 5, strokeWidth: 2 }}
-                      animationDuration={550}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="mt-2 flex items-center justify-center gap-5 text-[11px] text-muted-foreground">
-                <span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-emerald-500" />Receitas</span>
-                <span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-red-500" />Gastos</span>
-              </div>
+              )}
             </CardContent>
           </Card>
         </section>
@@ -326,8 +337,11 @@ function InicioPage() {
   );
 }
 
-function MiniValue({ icon, label, value, className = "" }: { icon: React.ReactNode; label: string; value: string; className?: string }) {
-  return <div className={className}><div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">{icon}{label}</div><p className="truncate text-sm font-semibold">{value}</p></div>;
+function MiniValue({ icon, label, value, className = "", compact = false }: { icon: React.ReactNode; label: string; value: string; className?: string; compact?: boolean }) {
+  return <div className={className}>
+    <div className={`mb-0.5 flex items-center gap-1.5 text-muted-foreground ${compact ? "text-[10px]" : "text-xs"}`}>{icon}{label}</div>
+    <p className={`truncate font-semibold ${compact ? "text-xs" : "text-sm"}`}>{value}</p>
+  </div>;
 }
 
 function QuickAction({ href, icon, label, tone }: { href: string; icon: React.ReactNode; label: string; tone: "income" | "expense" | "debt" | "save" }) {
