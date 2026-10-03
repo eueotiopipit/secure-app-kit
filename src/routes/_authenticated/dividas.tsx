@@ -18,25 +18,25 @@ function DividasPage() {
   const { data: rows = [], isLoading } = useQuery({ queryKey: ["debts", user.id], queryFn: async () => { const { data, error } = await supabase.from("debts").select("*").eq("user_id", user.id).order("created_at", { ascending: false }); if (error) throw error; return data ?? []; }});
   async function add() {
     const original = Math.round(Number(amount.replace(",", ".")) * 100); const inst = Math.round(Number(installment.replace(",", ".")) * 100);
-    if (!name.trim() || !Number.isFinite(original) || original <= 0) return toast.error("Informe nome e valor da dívida.");
+    if (!name.trim() || !Number.isFinite(original) || original <= 0) return void toast.error("Informe nome e valor da dívida.");
     const { error } = await supabase.from("debts").insert({ user_id: user.id, name: name.trim(), creditor: creditor.trim(), debt_type: "other", original_amount_cents: original, installment_amount_cents: Number.isFinite(inst) ? inst : 0, monthly_interest_rate: Number(interest.replace(",", ".")) || 0, status: "open", total_installments: 1 });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setName(""); setCreditor(""); setAmount(""); setInstallment(""); setInterest(""); await qc.invalidateQueries({ queryKey: ["debts", user.id] }); await qc.invalidateQueries({ queryKey: ["dashboard", user.id] }); toast.success("Dívida adicionada.");
   }
   async function pay(debt: (typeof rows)[number]) {
     const cents = Math.round(Number((paymentValues[debt.id] || "").replace(",", ".")) * 100);
     const remaining = Math.max(0, debt.original_amount_cents - debt.paid_amount_cents);
-    if (!Number.isFinite(cents) || cents <= 0 || cents > remaining) return toast.error("Informe um pagamento válido dentro do saldo restante.");
+    if (!Number.isFinite(cents) || cents <= 0 || cents > remaining) return void toast.error("Informe um pagamento válido dentro do saldo restante.");
     const { error: paymentError } = await supabase.from("debt_payments").insert({ user_id: user.id, debt_id: debt.id, amount_cents: cents, paid_on: new Date().toISOString().slice(0, 10) });
-    if (paymentError) return toast.error(paymentError.message);
+    if (paymentError) return void toast.error(paymentError.message);
     const paid = debt.paid_amount_cents + cents;
     const { error } = await supabase.from("debts").update({ paid_amount_cents: paid, paid_installments: debt.paid_installments + 1, status: paid >= debt.original_amount_cents ? "paid" : "open", paid_off_at: paid >= debt.original_amount_cents ? new Date().toISOString() : null }).eq("id", debt.id).eq("user_id", user.id);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setPaymentValues(v => ({ ...v, [debt.id]: "" }));
     await qc.invalidateQueries({ queryKey: ["debts", user.id] }); await qc.invalidateQueries({ queryKey: ["dashboard", user.id] });
     toast.success("Pagamento registrado.");
   }
-  async function remove(id: string) { const { error } = await supabase.from("debts").delete().eq("id", id).eq("user_id", user.id); if (error) return toast.error(error.message); await qc.invalidateQueries({ queryKey: ["debts", user.id] }); await qc.invalidateQueries({ queryKey: ["dashboard", user.id] }); }
+  async function remove(id: string) { const { error } = await supabase.from("debts").delete().eq("id", id).eq("user_id", user.id); if (error) return void toast.error(error.message); await qc.invalidateQueries({ queryKey: ["debts", user.id] }); await qc.invalidateQueries({ queryKey: ["dashboard", user.id] }); }
   return <FinanceLayout><div className="space-y-6">
     <div><p className="text-sm text-muted-foreground">Organize o que precisa ser quitado</p><h1 className="text-3xl font-bold">Dívidas</h1></div>
     <Card><CardHeader><CardTitle className="flex items-center gap-2"><Plus className="size-5" />Cadastrar dívida</CardTitle></CardHeader><CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

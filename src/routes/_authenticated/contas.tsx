@@ -103,7 +103,7 @@ function ContasPage() {
   const { data: connections = [], isLoading } = useQuery<Connection[]>({
     queryKey: ["bank-connections", user.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("bank_connections").select("id,item_id,institution_name,institution_logo_url,status,last_synced_at").eq("user_id", user.id).order("created_at", { ascending: false });
+      const { data, error } = await (supabase as any).from("bank_connections").select("id,item_id,institution_name,institution_logo_url,status,last_synced_at").eq("user_id", user.id).order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as Connection[];
     },
