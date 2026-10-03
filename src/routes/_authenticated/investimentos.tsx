@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, Bitcoin, Building2, DollarSign, RefreshCw, Sparkles, TrendingUp, Landmark, Home } from "lucide-react";
+import { ArrowDown, ArrowUp, Coins, Building2, DollarSign, RefreshCw, Sparkles, TrendingUp, Landmark, Home } from "lucide-react";
 import { FinanceLayout } from "@/components/finance-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,13 +35,13 @@ function InvestimentosPage(){
       <Category icon={Landmark} title="Renda fixa" text="Tesouro, CDB, LCI e LCA"/>
       <Category icon={TrendingUp} title="Bolsa" text="Ações e ETFs"/>
       <Category icon={Building2} title="FIIs" text="Exposição ao mercado imobiliário"/>
-      <Category icon={Bitcoin} title="Cripto" text="Bitcoin, Ethereum e outros"/>
+      <Category icon={Coins} title="Cripto" text="Bitcoin, Ethereum e outros"/>
       <Category icon={DollarSign} title="Exterior" text="Dólar e ativos globais"/>
     </div></CardContent></Card>
 
     <section className="grid gap-3 md:grid-cols-2">
       <Card><CardContent className="p-5"><div className="flex items-center gap-3"><span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Home className="size-5"/></span><div><h2 className="font-semibold">Imóveis</h2><p className="text-xs text-muted-foreground">Compare compra, aluguel, financiamento e valorização.</p></div></div><div className="mt-4 rounded-xl border p-4"><p className="text-sm font-medium">Simulação prática</p><p className="mt-1 text-xs text-muted-foreground">A próxima etapa pode transformar preço, entrada, aluguel e juros em um cenário comparável.</p></div></CardContent></Card>
-      <Card className="border-primary/20 bg-primary/5"><CardContent className="flex items-center justify-between gap-4 p-5"><div><p className="flex items-center gap-2 font-semibold"><Sparkles className="size-4"/> Entenda o movimento</p><p className="text-sm text-muted-foreground">Pergunte ao assistente sobre um ativo e use seus próprios números como contexto.</p></div><Button asChild><a href="/assistente">Perguntar</a></Button></CardContent></Card>
+      <Card className="border-primary/20 bg-primary/5"><CardContent className="flex items-center justify-between gap-4 p-5"><div><p className="flex items-center gap-2 font-semibold"><Sparkles className="size-4"/> Entenda o movimento</p><p className="text-sm text-muted-foreground">Pergunte ao assistente sobre um ativo e use seus próprios números como contexto.</p></div><Button asChild><Link to="/assistente">Perguntar</Link></Button></CardContent></Card>
     </section>
     <p className="text-[11px] text-muted-foreground">Cotações são informativas e dependem da disponibilidade dos provedores. Variações exibidas não constituem recomendação de investimento.</p>
   </div></FinanceLayout>
