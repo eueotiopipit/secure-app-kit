@@ -33,6 +33,8 @@ type Account = {
   color: string;
 };
 
+type Transaction = { account_id: string | null; type: string; amount_cents: number };
+
 const accountTypes = [
   { value: "checking", label: "Conta corrente", icon: Landmark },
   { value: "savings", label: "Poupança", icon: PiggyBank },
@@ -61,9 +63,32 @@ function ContasPage() {
     },
   });
 
+  const { data: transactions = [] } = useQuery<Transaction[]>({
+    queryKey: ["account-transactions", user.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("financial_transactions")
+        .select("account_id,type,amount_cents")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return (data ?? []) as Transaction[];
+    },
+  });
+
+  const balances = useMemo(() => {
+    const result: Record<string, number> = {};
+    for (const account of accounts) result[account.id] = Number(account.opening_balance_cents || 0);
+    for (const transaction of transactions) {
+      if (!transaction.account_id || result[transaction.account_id] === undefined) continue;
+      const amount = Number(transaction.amount_cents || 0);
+      result[transaction.account_id] += transaction.type === "income" ? amount : -amount;
+    }
+    return result;
+  }, [accounts, transactions]);
+
   const total = useMemo(
-    () => accounts.reduce((sum, account) => sum + Number(account.opening_balance_cents || 0), 0),
-    [accounts],
+    () => accounts.reduce((sum, account) => sum + (balances[account.id] ?? 0), 0),
+    [accounts, balances],
   );
 
   async function addAccount() {
@@ -99,6 +124,7 @@ function ContasPage() {
     if (error) return void toast.error(error.message);
 
     await queryClient.invalidateQueries({ queryKey: ["finance-accounts", user.id] });
+    await queryClient.invalidateQueries({ queryKey: ["account-transactions", user.id] });
     await queryClient.invalidateQueries({ queryKey: ["dashboard", user.id] });
     toast.success("Conta removida.");
   }
@@ -209,7 +235,7 @@ function ContasPage() {
               {accounts.map((account) => {
                 const typeInfo = accountTypes.find((item) => item.value === account.account_type) ?? accountTypes[0];
                 const Icon = typeInfo.icon;
-                const positive = Number(account.opening_balance_cents) >= 0;
+                const positive = (balances[account.id] ?? Number(account.opening_balance_cents)) >= 0;
 
                 return (
                   <Card key={account.id} className="group overflow-hidden transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md">
@@ -238,7 +264,7 @@ function ContasPage() {
                       <div className="mt-6 flex items-end justify-between">
                         <div>
                           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Saldo</p>
-                          <p className="mt-1 text-2xl font-bold tracking-tight">{money(Number(account.opening_balance_cents))}</p>
+                          <p className="mt-1 text-2xl font-bold tracking-tight">{money(balances[account.id] ?? Number(account.opening_balance_cents))}</p>
                         </div>
                         <span className={positive ? "flex size-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600" : "flex size-8 items-center justify-center rounded-full bg-red-500/10 text-red-600"}>
                           {positive ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
