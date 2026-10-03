@@ -13,13 +13,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedAssistenteRouteImport } from './routes/_authenticated/assistente'
 import { Route as AuthenticatedContasRouteImport } from './routes/_authenticated/contas'
 import { Route as AuthenticatedDividasRouteImport } from './routes/_authenticated/dividas'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
+import { Route as AuthenticatedInvestimentosRouteImport } from './routes/_authenticated/investimentos'
 import { Route as AuthenticatedLancamentosRouteImport } from './routes/_authenticated/lancamentos'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedPlanejamentoRouteImport } from './routes/_authenticated/planejamento'
 import { Route as AuthenticatedPorquinhosRouteImport } from './routes/_authenticated/porquinhos'
+import { Route as AuthenticatedRendaExtraRouteImport } from './routes/_authenticated/renda-extra'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +43,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAssistenteRoute = AuthenticatedAssistenteRouteImport.update({
+  id: '/assistente',
+  path: '/assistente',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedContasRoute = AuthenticatedContasRouteImport.update({
   id: '/contas',
   path: '/contas',
@@ -55,6 +63,12 @@ const AuthenticatedInicioRoute = AuthenticatedInicioRouteImport.update({
   path: '/inicio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInvestimentosRoute =
+  AuthenticatedInvestimentosRouteImport.update({
+    id: '/investimentos',
+    path: '/investimentos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLancamentosRoute =
   AuthenticatedLancamentosRouteImport.update({
     id: '/lancamentos',
@@ -77,30 +91,41 @@ const AuthenticatedPorquinhosRoute = AuthenticatedPorquinhosRouteImport.update({
   path: '/porquinhos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRendaExtraRoute = AuthenticatedRendaExtraRouteImport.update({
+  id: '/renda-extra',
+  path: '/renda-extra',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/assistente': typeof AuthenticatedAssistenteRoute
   '/contas': typeof AuthenticatedContasRoute
   '/dividas': typeof AuthenticatedDividasRoute
   '/inicio': typeof AuthenticatedInicioRoute
+  '/investimentos': typeof AuthenticatedInvestimentosRoute
   '/lancamentos': typeof AuthenticatedLancamentosRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/planejamento': typeof AuthenticatedPlanejamentoRoute
   '/porquinhos': typeof AuthenticatedPorquinhosRoute
+  '/renda-extra': typeof AuthenticatedRendaExtraRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/assistente': typeof AuthenticatedAssistenteRoute
   '/contas': typeof AuthenticatedContasRoute
   '/dividas': typeof AuthenticatedDividasRoute
   '/inicio': typeof AuthenticatedInicioRoute
+  '/investimentos': typeof AuthenticatedInvestimentosRoute
   '/lancamentos': typeof AuthenticatedLancamentosRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/planejamento': typeof AuthenticatedPlanejamentoRoute
   '/porquinhos': typeof AuthenticatedPorquinhosRoute
+  '/renda-extra': typeof AuthenticatedRendaExtraRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,13 +133,16 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/assistente': typeof AuthenticatedAssistenteRoute
   '/_authenticated/contas': typeof AuthenticatedContasRoute
   '/_authenticated/dividas': typeof AuthenticatedDividasRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
+  '/_authenticated/investimentos': typeof AuthenticatedInvestimentosRoute
   '/_authenticated/lancamentos': typeof AuthenticatedLancamentosRoute
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/planejamento': typeof AuthenticatedPlanejamentoRoute
   '/_authenticated/porquinhos': typeof AuthenticatedPorquinhosRoute
+  '/_authenticated/renda-extra': typeof AuthenticatedRendaExtraRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -122,38 +150,47 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/assistente'
     | '/contas'
     | '/dividas'
     | '/inicio'
+    | '/investimentos'
     | '/lancamentos'
     | '/perfil'
     | '/planejamento'
     | '/porquinhos'
+    | '/renda-extra'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/assistente'
     | '/contas'
     | '/dividas'
     | '/inicio'
+    | '/investimentos'
     | '/lancamentos'
     | '/perfil'
     | '/planejamento'
     | '/porquinhos'
+    | '/renda-extra'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/assistente'
     | '/_authenticated/contas'
     | '/_authenticated/dividas'
     | '/_authenticated/inicio'
+    | '/_authenticated/investimentos'
     | '/_authenticated/lancamentos'
     | '/_authenticated/perfil'
     | '/_authenticated/planejamento'
     | '/_authenticated/porquinhos'
+    | '/_authenticated/renda-extra'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -193,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/assistente': {
+      id: '/_authenticated/assistente'
+      path: '/assistente'
+      fullPath: '/assistente'
+      preLoaderRoute: typeof AuthenticatedAssistenteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/contas': {
       id: '/_authenticated/contas'
       path: '/contas'
@@ -212,6 +256,13 @@ declare module '@tanstack/react-router' {
       path: '/inicio'
       fullPath: '/inicio'
       preLoaderRoute: typeof AuthenticatedInicioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/investimentos': {
+      id: '/_authenticated/investimentos'
+      path: '/investimentos'
+      fullPath: '/investimentos'
+      preLoaderRoute: typeof AuthenticatedInvestimentosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lancamentos': {
@@ -242,27 +293,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPorquinhosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/renda-extra': {
+      id: '/_authenticated/renda-extra'
+      path: '/renda-extra'
+      fullPath: '/renda-extra'
+      preLoaderRoute: typeof AuthenticatedRendaExtraRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAssistenteRoute: typeof AuthenticatedAssistenteRoute
   AuthenticatedContasRoute: typeof AuthenticatedContasRoute
   AuthenticatedDividasRoute: typeof AuthenticatedDividasRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
+  AuthenticatedInvestimentosRoute: typeof AuthenticatedInvestimentosRoute
   AuthenticatedLancamentosRoute: typeof AuthenticatedLancamentosRoute
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedPlanejamentoRoute: typeof AuthenticatedPlanejamentoRoute
   AuthenticatedPorquinhosRoute: typeof AuthenticatedPorquinhosRoute
+  AuthenticatedRendaExtraRoute: typeof AuthenticatedRendaExtraRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAssistenteRoute: AuthenticatedAssistenteRoute,
   AuthenticatedContasRoute: AuthenticatedContasRoute,
   AuthenticatedDividasRoute: AuthenticatedDividasRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
+  AuthenticatedInvestimentosRoute: AuthenticatedInvestimentosRoute,
   AuthenticatedLancamentosRoute: AuthenticatedLancamentosRoute,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedPlanejamentoRoute: AuthenticatedPlanejamentoRoute,
   AuthenticatedPorquinhosRoute: AuthenticatedPorquinhosRoute,
+  AuthenticatedRendaExtraRoute: AuthenticatedRendaExtraRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
