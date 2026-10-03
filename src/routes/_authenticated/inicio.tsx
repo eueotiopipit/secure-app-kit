@@ -13,7 +13,6 @@ import {
   ReceiptText,
   BarChart3,
   Sparkles,
-  TrendingDown,
   TrendingUp,
   Target,
   Wallet,
@@ -121,84 +120,101 @@ function InicioPage() {
   const futureExpense = futureTransactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount_cents, 0);
   const futureByDay = Array.from(new Set(futureTransactions.map((t) => t.occurred_on)));
 
+  const forecastNet = futureIncome - futureExpense;
+  const currentMonth = new Date().toLocaleDateString("pt-BR", { month: "long" });
+  const expenseShare = income > 0 ? Math.min(100, (expenses / income) * 100) : 0;
+
   return (
     <FinanceLayout>
-      <div className="space-y-7 pb-6">
-        <header className="space-y-1">
-          <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <Sparkles className="size-4" /> Seu centro financeiro
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Olá, {data?.name?.split(" ")[0] ?? "usuário"} 👋
-          </h1>
-          <p className="text-sm text-muted-foreground">Veja o que está acontecendo com seu dinheiro hoje.</p>
+      <div className="space-y-6 pb-8">
+        <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+              <Sparkles className="size-3.5" /> Seu centro financeiro
+            </p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+              Olá, {data?.name?.split(" ")[0] ?? "usuário"} 👋
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">Uma visão clara do seu dinheiro, sem complicação.</p>
+          </div>
+          <p className="text-xs capitalize text-muted-foreground">{currentMonth}</p>
         </header>
 
-        <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-          <div className="p-5 sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Wallet className="size-4" /> Saldo atual
+        <section className="grid gap-3 lg:grid-cols-[1.35fr_.65fr]">
+          <Card className="overflow-hidden border-primary/15 bg-card shadow-sm">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><Wallet className="size-4" /> Saldo atual</p>
+                  <p className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{money(balance)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Baseado nas movimentações registradas</p>
                 </div>
-                <p className="text-3xl font-bold tracking-tight sm:text-4xl">{money(balance)}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Receitas e gastos registrados no app</p>
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Wallet className="size-5" /></div>
               </div>
-              <div className="hidden size-11 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex">
-                <Wallet className="size-5" />
+              <div className="mt-5 grid grid-cols-3 gap-3 border-t pt-4">
+                <MiniValue icon={<ArrowUpCircle className="size-3.5 text-emerald-500" />} label="Receitas" value={money(income)} compact />
+                <MiniValue icon={<ArrowDownCircle className="size-3.5 text-red-500" />} label="Gastos" value={money(expenses)} compact />
+                <MiniValue icon={<CreditCard className="size-3.5 text-orange-500" />} label="Dívidas" value={money(debtTotal)} compact />
               </div>
-            </div>
-            <div className="mt-5 grid grid-cols-3 gap-2 border-t pt-4">
-              <MiniValue icon={<ArrowUpCircle className="size-3.5 text-emerald-500" />} label="Receitas" value={money(income)} compact />
-              <MiniValue icon={<ArrowDownCircle className="size-3.5 text-red-500" />} label="Gastos" value={money(expenses)} compact />
-              <MiniValue icon={<CreditCard className="size-3.5 text-orange-500" />} label="Dívidas" value={money(debtTotal)} compact />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border bg-card shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Resumo rápido</p>
+                  <h2 className="mt-1 font-semibold">Como está seu mês</h2>
+                </div>
+                <BarChart3 className="size-5 text-primary" />
+              </div>
+              <div className="mt-5 space-y-4">
+                <div>
+                  <div className="mb-1.5 flex justify-between text-xs"><span className="text-muted-foreground">Gastos sobre receitas</span><span className="font-semibold">{Math.round(expenseShare)}%</span></div>
+                  <Progress value={expenseShare} className="h-1.5" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <MetricBox label="Guardado" value={money(saved)} icon={<PiggyBank className="size-4" />} />
+                  <MetricBox label="Dívidas abertas" value={money(debtTotal)} icon={<CreditCard className="size-4" />} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         <section className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
-          <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="flex items-center gap-2 font-semibold">
-                Fluxo financeiro
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">dinâmico</span>
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground">Compare o que entrou e saiu do seu dinheiro.</p>
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold">Movimentação financeira</h2>
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">AO VIVO</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Entradas e saídas registradas no período.</p>
             </div>
-            <div className="flex shrink-0 rounded-lg border bg-background/60 p-1">
+            <div className="flex w-fit rounded-lg border bg-background/60 p-1">
               {[7, 30, 180].map((period) => (
-                <button
-                  key={period}
-                  type="button"
-                  onClick={() => setChartPeriod(period as 7 | 30 | 180)}
-                  className={`rounded-md px-2 py-1 text-[10px] font-semibold transition-colors ${chartPeriod === period ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                >
+                <button key={period} type="button" onClick={() => setChartPeriod(period as 7 | 30 | 180)}
+                  className={`rounded-md px-2.5 py-1 text-[10px] font-semibold transition-colors ${chartPeriod === period ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   {period === 180 ? "6M" : `${period}D`}
                 </button>
               ))}
             </div>
           </div>
-          <div className="mb-3 flex items-center gap-4 text-[11px]">
-            <span className="flex items-center gap-1.5 text-emerald-500"><span className="size-2 rounded-full bg-emerald-500" /> Entrou <strong>{money(chartIncome)}</strong></span>
-            <span className="flex items-center gap-1.5 text-red-500"><span className="size-2 rounded-full bg-red-500" /> Saiu <strong>{money(chartExpense)}</strong></span>
+          <div className="mb-3 grid grid-cols-2 gap-3 sm:max-w-md">
+            <div className="rounded-xl bg-emerald-500/8 p-3"><p className="text-[10px] text-muted-foreground">Entrou</p><p className="mt-0.5 text-sm font-bold text-emerald-600">+{money(chartIncome)}</p></div>
+            <div className="rounded-xl bg-red-500/8 p-3"><p className="text-[10px] text-muted-foreground">Saiu</p><p className="mt-0.5 text-sm font-bold text-red-600">-{money(chartExpense)}</p></div>
           </div>
-          <div className="h-[175px] w-full">
+          <div className="h-[190px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={movementChart} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(142 71% 45%)" stopOpacity={0.24} />
-                    <stop offset="100%" stopColor="hsl(142 71% 45%)" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="expenseFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(0 84% 60%)" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="hsl(0 84% 60%)" stopOpacity={0} />
-                  </linearGradient>
+                  <linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="hsl(142 71% 45%)" stopOpacity={0.24} /><stop offset="100%" stopColor="hsl(142 71% 45%)" stopOpacity={0} /></linearGradient>
+                  <linearGradient id="expenseFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="hsl(0 84% 60%)" stopOpacity={0.2} /><stop offset="100%" stopColor="hsl(0 84% 60%)" stopOpacity={0} /></linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="3 3" />
                 <XAxis dataKey="label" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval={chartPeriod === 7 ? 0 : chartPeriod === 30 ? 6 : 29} />
                 <YAxis hide domain={[0, "auto"]} />
-                <Tooltip cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }} contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", fontSize: 11, padding: "8px 10px" }} labelStyle={{ color: "hsl(var(--muted-foreground))", marginBottom: 4 }} formatter={(value, name) => [money(Number(value)), name === "income" ? "Receitas" : "Gastos"]} />
+                <Tooltip cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }} contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", fontSize: 11, padding: "8px 10px" }} formatter={(value, name) => [money(Number(value)), name === "income" ? "Receitas" : "Gastos"]} />
                 <Area type="monotone" dataKey="income" stroke="hsl(142 71% 45%)" fill="url(#incomeFill)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} animationDuration={500} />
                 <Area type="monotone" dataKey="expense" stroke="hsl(0 84% 60%)" fill="url(#expenseFill)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} animationDuration={500} />
               </AreaChart>
@@ -207,151 +223,101 @@ function InicioPage() {
         </section>
 
         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <QuickAction href="/lancamentos" icon={<ArrowUpCircle />} tone="income" label="Adicionar receita" />
-          <QuickAction href="/lancamentos" icon={<ArrowDownCircle />} tone="expense" label="Adicionar gasto" />
+          <QuickAction href="/lancamentos" icon={<ArrowUpCircle />} tone="income" label="Nova receita" />
+          <QuickAction href="/lancamentos" icon={<ArrowDownCircle />} tone="expense" label="Novo gasto" />
           <QuickAction href="/dividas" icon={<CreditCard />} tone="debt" label="Pagar dívida" />
           <QuickAction href="/porquinhos" icon={<PiggyBank />} tone="save" label="Guardar dinheiro" />
         </section>
 
-        <section className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="flex items-center gap-2 font-semibold">
-                <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <CalendarClock className="size-4" />
-                </span>
-                Próximos dias
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground">O que está previsto para entrar e sair</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] text-muted-foreground">Próximos 7 dias</p>
-              <p className="text-xs font-semibold">
-                <span className="text-emerald-500">+{money(futureIncome)}</span>
-                <span className="mx-1 text-muted-foreground">·</span>
-                <span className="text-red-500">-{money(futureExpense)}</span>
-              </p>
-            </div>
-          </div>
-          <Card>
-            <CardContent className="p-3">
-              {futureByDay.length === 0 ? (
-                <div className="flex items-center gap-3 rounded-xl border border-dashed p-4">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <CalendarClock className="size-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Nada agendado para os próximos 7 dias</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">Cadastre uma movimentação com uma data futura para acompanhar aqui.</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {futureByDay.map((date) => {
-                    const dayRows = futureTransactions.filter((t) => t.occurred_on === date);
-                    const dayIncome = dayRows.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount_cents, 0);
-                    const dayExpense = dayRows.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount_cents, 0);
-                    return (
-                      <div key={date} className="flex items-center gap-3 rounded-xl border p-3">
-                        <div className="flex size-10 shrink-0 flex-col items-center justify-center rounded-lg bg-muted/60">
-                          <span className="text-[10px] font-medium text-muted-foreground">
-                            {new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}
-                          </span>
-                          <span className="text-sm font-bold">{new Date(`${date}T12:00:00`).getDate()}</span>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium">{dayRows.length} {dayRows.length === 1 ? "movimentação" : "movimentações"}</p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
-                          </p>
-                        </div>
-                        <div className="text-right text-xs font-semibold">
-                          {dayIncome > 0 && <p className="text-emerald-500">+{money(dayIncome)}</p>}
-                          {dayExpense > 0 && <p className="text-red-500">-{money(dayExpense)}</p>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </section>
-
-        <section className="space-y-3">
-          <SectionHeading icon={<ReceiptText className="size-5" />} title="Últimas movimentações" href="/lancamentos" action="Ver todas" />
-          <Card>
+        <section className="grid gap-3 lg:grid-cols-2">
+          <Card className="overflow-hidden">
             <CardContent className="p-0">
-              {isLoading ? (
-                <div className="p-5 text-sm text-muted-foreground">Carregando suas movimentações...</div>
-              ) : recentTransactions.length === 0 ? (
-                <div className="p-6 text-center">
-                  <Receipt className="mx-auto mb-2 size-8 text-muted-foreground" />
-                  <p className="font-medium">Nenhuma movimentação ainda</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Comece registrando uma receita ou um gasto.</p>
-                  <Button asChild className="mt-4"><a href="/lancamentos"><Plus className="size-4" />Adicionar lançamento</a></Button>
-                </div>
-              ) : (
-                <div>{recentTransactions.map((t) => (
-                  <TransactionRow key={t.id} description={t.description} category={t.category} date={t.occurred_on} amount={t.amount_cents} positive={t.type === "income"} />
-                ))}</div>
-              )}
+              <div className="flex items-center justify-between border-b p-4">
+                <div><h2 className="flex items-center gap-2 font-semibold"><CalendarClock className="size-4 text-primary" /> Próximos dias</h2><p className="mt-1 text-xs text-muted-foreground">Previsão para os próximos 7 dias</p></div>
+                <div className="text-right"><p className="text-[10px] text-muted-foreground">Saldo previsto</p><p className={`text-sm font-bold ${forecastNet >= 0 ? "text-emerald-600" : "text-red-600"}`}>{forecastNet >= 0 ? "+" : ""}{money(forecastNet)}</p></div>
+              </div>
+              <div className="p-3">
+                {futureByDay.length === 0 ? (
+                  <EmptyState icon={<CalendarClock className="size-4" />} text="Nenhuma movimentação prevista." />
+                ) : (
+                  <div className="space-y-2">
+                    {futureByDay.slice(0, 4).map((date) => {
+                      const rows = futureTransactions.filter((t) => t.occurred_on === date);
+                      const dayIncome = rows.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount_cents, 0);
+                      const dayExpense = rows.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount_cents, 0);
+                      return <div key={date} className="flex items-center gap-3 rounded-xl border p-3">
+                        <div className="flex size-9 shrink-0 flex-col items-center justify-center rounded-lg bg-muted/70"><span className="text-[9px] font-medium uppercase text-muted-foreground">{new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","")}</span><span className="text-sm font-bold">{new Date(`${date}T12:00:00`).getDate()}</span></div>
+                        <div className="min-w-0 flex-1"><p className="text-sm font-medium">{rows.length} {rows.length === 1 ? "movimentação" : "movimentações"}</p><p className="text-[10px] text-muted-foreground">{new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR",{day:"2-digit",month:"long"})}</p></div>
+                        <div className="text-right text-xs font-semibold">{dayIncome > 0 && <p className="text-emerald-600">+{money(dayIncome)}</p>}{dayExpense > 0 && <p className="text-red-600">-{money(dayExpense)}</p>}</div>
+                      </div>;
+                    })}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden">
+            <CardContent className="p-0">
+              <div className="flex items-center justify-between border-b p-4">
+                <div><h2 className="flex items-center gap-2 font-semibold"><ReceiptText className="size-4 text-primary" /> Últimas movimentações</h2><p className="mt-1 text-xs text-muted-foreground">Suas atividades mais recentes</p></div>
+                <Button asChild variant="ghost" size="sm" className="text-xs"><a href="/lancamentos">Ver todas <ChevronRight className="size-3.5" /></a></Button>
+              </div>
+              {isLoading ? <div className="p-5 text-sm text-muted-foreground">Carregando...</div> : recentTransactions.length === 0 ? <EmptyState icon={<Receipt className="size-4" />} text="Nenhuma movimentação registrada." action={<Button asChild size="sm"><a href="/lancamentos"><Plus className="size-4" />Adicionar</a></Button>} /> : <div>{recentTransactions.map((t) => <TransactionRow key={t.id} description={t.description} category={t.category} date={t.occurred_on} amount={t.amount_cents} positive={t.type === "income"} />)}</div>}
             </CardContent>
           </Card>
         </section>
 
-        <section className="space-y-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary">Finza inteligente</p>
-            <h2 className="mt-1 text-xl font-bold tracking-tight">Próximas decisões</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Ferramentas que transformam seus números em ações.</p>
+        <section className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div><p className="text-xs font-semibold uppercase tracking-wider text-primary">Finza inteligente</p><h2 className="mt-1 text-xl font-bold tracking-tight">O que você pode fazer agora</h2><p className="mt-1 text-sm text-muted-foreground">Acesse as áreas que ajudam a melhorar sua vida financeira.</p></div>
+            <Sparkles className="mt-1 hidden size-5 text-primary sm:block" />
           </div>
-          <div className="grid gap-3 lg:grid-cols-3">
-            <SmartHub
-              href="/renda-extra"
-              icon={<TrendingUp className="size-5" />}
-              title="Aumente sua renda"
-              text="Encontre formas de gerar renda e simule quanto precisa fazer por mês."
-              badge={balance < 0 ? "Prioridade" : "Oportunidades"}
-              value={balance < 0 ? "Reduzir déficit" : "Criar renda"}
-            />
-            <SmartHub
-              href="/investimentos"
-              icon={<BarChart3 className="size-5" />}
-              title="Radar de investimentos"
-              text="Acompanhe ativos e entenda movimentos do mercado em um só lugar."
-              badge="Dados de mercado"
-              value="Ver cotações"
-            />
-            <SmartHub
-              href="/assistente"
-              icon={<Sparkles className="size-5" />}
-              title="Assistente financeiro"
-              text="Cruze receitas, gastos, dívidas e metas para organizar seus próximos passos."
-              badge="IA"
-              value="Abrir assistente"
-            />
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <SmartHub href="/renda-extra" icon={<TrendingUp className="size-5" />} title="Aumente sua renda" text="Simule metas e encontre oportunidades para gerar mais dinheiro." badge="Renda" value="Explorar" />
+            <SmartHub href="/investimentos" icon={<BarChart3 className="size-5" />} title="Investimentos" text="Acompanhe cotações e organize sua visão de mercado." badge="Mercado" value="Ver investimentos" />
+            <SmartHub href="/assistente" icon={<Sparkles className="size-5" />} title="Assistente financeiro" text="Use seus próprios dados para entender os próximos passos." badge="IA" value="Abrir assistente" />
           </div>
         </section>
 
-        <section className="grid gap-3 sm:grid-cols-2">
-          {topGoals.map((goal) => {
-            const progress = goal.target_amount_cents > 0 ? Math.min(100, (goal.current_amount_cents / goal.target_amount_cents) * 100) : 0;
-            return (
-              <div key={goal.id} className="rounded-xl border bg-card p-4">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className="flex min-w-0 items-center gap-2 text-sm font-medium"><PiggyBank className="size-4 shrink-0 text-primary" /><span className="truncate">{goal.name}</span></span>
-                  <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
-                </div>
-                <Progress value={progress} />
-                <p className="mt-2 text-xs text-muted-foreground">{money(goal.current_amount_cents)} de {money(goal.target_amount_cents)}</p>
-              </div>
-            );
-          })}
+        <section className="grid gap-3 md:grid-cols-2">
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Dívidas</p><h2 className="mt-1 text-lg font-bold">{money(debtTotal)}</h2></div><div className="flex size-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500"><CreditCard className="size-5" /></div></div>
+              <div className="mt-4 flex justify-between text-xs"><span className="text-muted-foreground">Progresso quitado</span><span className="font-semibold">{Math.round(debtProgress)}%</span></div>
+              <Progress value={debtProgress} className="mt-2 h-1.5" />
+              <Button asChild variant="ghost" size="sm" className="mt-3 px-0 text-xs"><a href="/dividas">Gerenciar dívidas <ChevronRight className="size-3.5" /></a></Button>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Objetivos guardados</p><h2 className="mt-1 text-lg font-bold">{money(saved)}</h2></div><div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Target className="size-5" /></div></div>
+              <div className="mt-4 flex justify-between text-xs"><span className="text-muted-foreground">Progresso das metas</span><span className="font-semibold">{Math.round(savingProgress)}%</span></div>
+              <Progress value={savingProgress} className="mt-2 h-1.5" />
+              <Button asChild variant="ghost" size="sm" className="mt-3 px-0 text-xs"><a href="/porquinhos">Ver objetivos <ChevronRight className="size-3.5" /></a></Button>
+            </CardContent>
+          </Card>
         </section>
       </div>
     </FinanceLayout>
   );
+}
+
+
+function MetricBox({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+  return <div className="rounded-xl border bg-background/50 p-3">
+    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">{icon}{label}</div>
+    <p className="mt-1 text-sm font-bold truncate">{value}</p>
+  </div>;
+}
+
+function EmptyState({ icon, text, action }: { icon: React.ReactNode; text: string; action?: React.ReactNode }) {
+  return <div className="flex flex-col items-center justify-center gap-2 p-6 text-center">
+    <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">{icon}</div>
+    <p className="text-sm text-muted-foreground">{text}</p>
+    {action}
+  </div>;
+}
 }
 
 function MiniValue({ icon, label, value, className = "", compact = false }: { icon: React.ReactNode; label: string; value: string; className?: string; compact?: boolean }) {
