@@ -22,8 +22,7 @@ alter table public.financial_transactions
   add column if not exists external_id text;
 
 create unique index if not exists financial_transactions_user_external_idx
-  on public.financial_transactions(user_id, external_id)
-  where external_id is not null;
+  on public.financial_transactions(user_id, external_id);
 
 alter table public.bank_connections enable row level security;
 
