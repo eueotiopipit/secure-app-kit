@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedContasRouteImport } from './routes/_authenticated/contas'
 import { Route as AuthenticatedDividasRouteImport } from './routes/_authenticated/dividas'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedLancamentosRouteImport } from './routes/_authenticated/lancamentos'
@@ -38,6 +39,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedContasRoute = AuthenticatedContasRouteImport.update({
+  id: '/contas',
+  path: '/contas',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDividasRoute = AuthenticatedDividasRouteImport.update({
   id: '/dividas',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/contas': typeof AuthenticatedContasRoute
   '/dividas': typeof AuthenticatedDividasRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/lancamentos': typeof AuthenticatedLancamentosRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/contas': typeof AuthenticatedContasRoute
   '/dividas': typeof AuthenticatedDividasRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/lancamentos': typeof AuthenticatedLancamentosRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/contas': typeof AuthenticatedContasRoute
   '/_authenticated/dividas': typeof AuthenticatedDividasRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/lancamentos': typeof AuthenticatedLancamentosRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/contas'
     | '/dividas'
     | '/inicio'
     | '/lancamentos'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/contas'
     | '/dividas'
     | '/inicio'
     | '/lancamentos'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/contas'
     | '/_authenticated/dividas'
     | '/_authenticated/inicio'
     | '/_authenticated/lancamentos'
@@ -180,6 +192,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/contas': {
+      id: '/_authenticated/contas'
+      path: '/contas'
+      fullPath: '/contas'
+      preLoaderRoute: typeof AuthenticatedContasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dividas': {
       id: '/_authenticated/dividas'
@@ -227,6 +246,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedContasRoute: typeof AuthenticatedContasRoute
   AuthenticatedDividasRoute: typeof AuthenticatedDividasRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedLancamentosRoute: typeof AuthenticatedLancamentosRoute
@@ -236,6 +256,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedContasRoute: AuthenticatedContasRoute,
   AuthenticatedDividasRoute: AuthenticatedDividasRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedLancamentosRoute: AuthenticatedLancamentosRoute,
